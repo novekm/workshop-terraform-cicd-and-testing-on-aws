@@ -4,7 +4,8 @@
 module "codecommit-repos" {
   source = "../modules/module-aws-tf-cicd"
 
-  project_prefix = "this_is_a_project_prefix_and_it_is_way_too_long_and_will_cause_a_failure"
+  project_prefix = "devops_core"
+  # project_prefix = "this_is_a_project_prefix_and_it_is_way_too_long_and_will_cause_a_failure"
 
   codecommit_repos = {
     # CodeCommit Repo for 'module-aws-tf-cicd' Terraform Module

@@ -24,10 +24,20 @@ brew unlink terraform
 # Install tfenv
 brew install tfenv
 
+# Check tfenv version to validte installation
+tfenv -v
+
 # Download and switch to to latest version of Terraform
 tfenv use latest
 
 # Validate that v1.6 or higher of Terraform is installed
 terraform -v
+
+# Install Checkov
+brew install checkov
+
+# Check Checkov version to validte installation
+checkov -v
+
 
 echo Setup finished successfully!
