@@ -3,19 +3,21 @@
 resource "random_uuid" "codepipeline_artifacts_s3_uuid" {
 }
 
-resource "random_string" "codepipeline_artifacts_s3" {
-  count   = var.create_codepipeline_resources ? 1 : 0
-  length  = 8
+resource "random_string" "codepipeline_artifacts_s3_bucket" {
+  count   = var.create_codepipeline_artifacts_bucket ? 1 : 0
+  length  = 4
   special = false
+  upper   = false
 }
 
 
 resource "aws_s3_bucket" "codepipeline_artifacts_bucket" {
-  count  = var.create_codepipeline_resources ? 1 : 0
-  bucket = "codepipeline-artifacts-${random_string.codepipeline_artifacts_s3[0].result}"
+  count  = var.create_codepipeline_artifacts_bucket ? 1 : 0
+  bucket = "${var.project_prefix}-codepipeline-artifacts-${random_string.codepipeline_artifacts_s3_bucket[0].result}"
 }
 
 resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pab" {
+  count  = var.create_codepipeline_artifacts_bucket ? 1 : 0
   bucket = aws_s3_bucket.codepipeline_artifacts_bucket[0].id
 
   block_public_acls       = var.s3_public_access_block

@@ -1,11 +1,11 @@
 # Instructions: Create CodePipeline Resource
 
 resource "aws_codepipeline" "codepipeline" {
-  name     = "tf-test-pipeline"
+  name     = var.pipeline_name
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
-    location = aws_s3_bucket.codepipeline_artifact_bucket.bucket
+    location = var.existing_s3_bucket_name != null ? var.existing_s3_bucket_name : aws_s3_bucket.codepipeline_artifacts_bucket.id
     type     = "S3"
 
     encryption_key {
@@ -18,7 +18,7 @@ resource "aws_codepipeline" "codepipeline" {
     name = "Source"
 
     action {
-      name             = "SourceAction"
+      name             = "PullFromCodeCommit"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeCommit"
@@ -30,13 +30,49 @@ resource "aws_codepipeline" "codepipeline" {
         BranchName     = var.branch_name
       }
     }
+
+    dynamic "forwarding_configuration" {
+      for_each = routing_rule.value.configuration == "Forwarding" ? [routing_rule.value.forwarding_configuration] : []
+      content {
+        forwarding_protocol = routing_rule.value.forwarding_configuration.forwarding_protocol
+        backend_pool_name   = routing_rule.value.forwarding_configuration.backend_pool_name
+      }
+    }
+
+    # action {
+    #   name             = "PullFromCodeCommit"
+    #   category         = "Source"
+    #   owner            = "AWS"
+    #   provider         = "CodeCommit"
+    #   version          = "1"
+    #   output_artifacts = ["source_output"]
+
+    #   configuration = {
+    #     RepositoryName = var.repository_name
+    #     BranchName     = var.branch_name
+    #   }
+    # }
   }
 
   stage {
     name = "Test"
 
     action {
-      name             = "BuildAction"
+      name             = "RunTerraformTest"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      version          = "1"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["build_output"]
+
+      configuration = {
+        ProjectName = var.tf_module_validation_build_project_name
+      }
+    }
+
+    action {
+      name             = "RunCheckov"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
@@ -50,7 +86,7 @@ resource "aws_codepipeline" "codepipeline" {
     }
   }
   stage {
-    name = "SecTest"
+    name = ""
 
     action {
       name             = "BuildAction"

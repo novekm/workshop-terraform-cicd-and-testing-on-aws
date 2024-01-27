@@ -1,14 +1,10 @@
-#  Create resources for S3 here
-
-resource "random_uuid" "codepipeline_artifacts_bucket_uuid" {
-}
+#  Create resources for S3
 
 resource "random_string" "codepipeline_artifacts_bucket" {
   count   = var.create_s3_artifacts_bucket ? 1 : 0
   length  = 8
   special = false
 }
-
 
 resource "aws_s3_bucket" "codepipeline_artifacts_bucket" {
   count  = var.create_s3_artifacts_bucket ? 1 : 0

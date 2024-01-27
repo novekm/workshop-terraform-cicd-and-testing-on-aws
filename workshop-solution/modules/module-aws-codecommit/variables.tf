@@ -1,4 +1,4 @@
-# Instructions: Create Module Input Variables
+# Instructions: Create Module Input Variables for CodeCommit Module
 
 variable "repository_name" {
   type        = string

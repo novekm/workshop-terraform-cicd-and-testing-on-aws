@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "codepipeline_trust_relationship" {
   }
 }
 # CodeBuild
-data "aws_iam_policy_document" "codepipeline_trust_relationship" {
+data "aws_iam_policy_document" "codebuild_trust_relationship" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "codepipeline_policy_restricted_access" {
   }
 }
 resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
-  count       = var.create_codepipeline_resources ? 1 : 0
+  count       = var.create_codepipeline_service_role ? 1 : 0
   name        = "${var.project_prefix}-codepipeline-service-role-policy-restricted-access"
   description = "Policy granting AWS CodePipeling restricted access to _____"
   policy      = data.aws_iam_policy_document.codepipeline_policy_restricted_access.json
@@ -43,56 +43,45 @@ resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
 
 # CodeBuild
 data "aws_iam_policy_document" "codebuild_policy_restricted_access" {
-  for_each = var.codecommit_repos == null ? {} : var.codecommit_repos
+  count = var.create_codebuild_service_role ? 1 : 0
   statement {
     effect  = "Allow"
     actions = ["codecommit:*"]
     resources = [
       "*",
-      each.value
+      # each.value.repository_name
     ]
   }
 
 }
 resource "aws_iam_policy" "codebuild_policy_restricted_access" {
-  count       = var.create_codepipeline_resources ? 1 : 0
+  count       = var.create_codebuild_service_role ? 1 : 0
   name        = "${var.project_prefix}-codebuild-service-role-policy-restricted-access"
   description = "Policy granting AWS CodePipeling restricted access to _____"
-  policy      = data.aws_iam_policy_document.codebuild_policy_restricted_access.json
+  policy      = data.aws_iam_policy_document.codebuild_policy_restricted_access[0].json
 }
 
 
 # - IAM Roles -
 # CodePipeline
 resource "aws_iam_role" "codepipeline_service_role" {
-  count              = var.create_codepipeline_resources ? 1 : 0
+  count              = var.create_codepipeline_service_role ? 1 : 0
   name               = "${var.project_prefix}-codepipeline-service-role"
   assume_role_policy = data.aws_iam_policy_document.codepipeline_trust_relationship.json
   managed_policy_arns = [
 
     "arn:aws:iam::aws:policy/AdministratorAccess",
-    # "arn:aws:iam::aws:policy/AWSCodeCommitReadOnly",
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-    "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
-    "arn:aws:iam::aws:policy/AWSCodeBuildFullAccess",
-    "arn:aws:iam::aws:policy/AmazonCloudWatchFullAccess",
-    aws_iam_policy.codepipeline_policy_restricted_access.arn,
+    aws_iam_policy.codepipeline_policy_restricted_access[0].arn,
   ]
 }
 # CodeBuild
 resource "aws_iam_role" "codebuild_service_role" {
-  count              = var.create_codebuild_resources ? 1 : 0
+  count              = var.create_codebuild_service_role ? 1 : 0
   name               = "${var.project_prefix}-codebuild-service-role"
   assume_role_policy = data.aws_iam_policy_document.codebuild_trust_relationship.json
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/AdministratorAccess",
-    # "arn:aws:iam::aws:policy/AWSCodeCommitReadOnly",
-    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
-    "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
-    "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
-    "arn:aws:iam::aws:policy/AmazonCloudWatchFullAccess",
-    aws_iam_policy.codebuild_policy_restricted_access.arn,
+    aws_iam_policy.codebuild_policy_restricted_access[0].arn,
   ]
 }
 

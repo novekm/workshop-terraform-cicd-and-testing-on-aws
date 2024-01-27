@@ -1,4 +1,4 @@
-# Instructions: Create Module Input Variables
+# Instructions: Create Module Input Variables for CodeBuild Module
 
 # - Conditional Logic Variables -
 variable "create_iam_resources" {
@@ -91,7 +91,7 @@ variable "build_spec" {
 variable "source_version" {
   type        = string
   default     = "main"
-  description = "ersion of the build input to be built for this project. If not specified, the latest version is used."
+  description = "Version of the build input to be built for this project. If not specified, the latest version is used."
 }
 
 

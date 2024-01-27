@@ -3,7 +3,7 @@
 # - Conditional Logic Variables -
 variable "create_iam_resources" {
   type        = bool
-  default     = false
+  default     = true
   description = "Conditional creation of IAM Resources."
 
 }
@@ -15,6 +15,12 @@ variable "create_s3_artifacts_bucket" {
 }
 
 # - S3 -
+variable "existing_s3_bucket_name" {
+  type        = string
+  default     = null
+  description = "The name of the existing S3 bucket you wish to store the CodePipeline artifacts in."
+
+}
 variable "s3_public_access_block" {
   type        = bool
   default     = true
@@ -22,7 +28,18 @@ variable "s3_public_access_block" {
 
 }
 
+
 # CodePipeline
+variable "pipeline_name" {
+  type        = string
+  default     = null
+  description = "The name of your CodePipeline pipeline."
+
+  validation {
+    condition     = var.pipeline_name != null
+    error_message = "A name for your CodePipeline pipeline is required but was not defined. Please add a name for the CodePipeline pipeline.'"
+  }
+}
 variable "repository_name" {
   type        = string
   default     = null
