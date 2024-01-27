@@ -1,5 +1,11 @@
 # Instructions: Create resources for IAM
 
+resource "random_string" "codepipeline_service_role" {
+  length  = 2
+  special = false
+}
+
+
 # - Trust Relationships -
 # CodePipeline
 data "aws_iam_policy_document" "codepipeline_trust_relationship" {
@@ -25,7 +31,7 @@ data "aws_iam_policy_document" "codepipeline_policy_restricted_access" {
 }
 resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
   count       = var.create_iam_resources ? 1 : 0
-  name        = "tf-codepipeline-service-role-policy-restricted-access"
+  name        = "tf-codepipeline-service-role-policy-restricted-access-${random_string.codepipeline_service_role.result}"
   description = "Policy granting AWS CodePipeling restricted access to _____"
   policy      = data.aws_iam_policy_document.codepipeline_policy_restricted_access.json
 }
@@ -35,7 +41,7 @@ resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
 # CodePipeline
 resource "aws_iam_role" "codepipeline_service_role" {
   count              = var.create_iam_resources ? 1 : 0
-  name               = "tf-workshop-codepipeline-service-role"
+  name               = "tf-workshop-codepipeline-service-role-${random_string.codepipeline_service_role.result}"
   assume_role_policy = data.aws_iam_policy_document.codepipeline_trust_relationship.json
   managed_policy_arns = [
 
@@ -48,6 +54,8 @@ resource "aws_iam_role" "codepipeline_service_role" {
     "arn:aws:iam::aws:policy/AmazonCloudWatchFullAccess",
     aws_iam_policy.codepipeline_policy_restricted_access.arn,
   ]
+
+  force_detach_policies = true
 }
 
 

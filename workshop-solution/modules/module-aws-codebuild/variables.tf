@@ -3,7 +3,7 @@
 # - Conditional Logic Variables -
 variable "create_iam_resources" {
   type        = bool
-  default     = false
+  default     = true
   description = "Conditional creation of IAM Resources."
 
 }
@@ -15,7 +15,7 @@ variable "project_name" {
   description = "The name of your CodeBuild Project."
 
   validation {
-    condition     = var.project_name == null
+    condition     = var.project_name != null
     error_message = "A CodeBuild Project Name is required but was not defined. Please add a name for the CodeBuild Project.'"
   }
 }
@@ -32,7 +32,7 @@ variable "codebuild_build_timeout" {
   description = "The number of minutes from 5 to 480 (8 hours), for AWS CodeBuild to wait until timing out any build that does not get marked as completed. This option is not available for the 'Lambda' compute type."
 
   validation {
-    condition     = var.codebuild_build_timeout < 5 && var.codebuild_build_timeout > 480
+    condition     = var.codebuild_build_timeout > 5 && var.codebuild_build_timeout < 480
     error_message = "The defined 'codebuild_build_timeout' (${var.codebuild_build_timeout}) is not an acceptable value. The build_timeout must be greater than 5 or lesss than 480"
   }
 
@@ -61,7 +61,7 @@ variable "codebuild_source_type" {
   default     = null
 
   validation {
-    condition     = var.codebuild_source_type == null
+    condition     = var.codebuild_source_type != null
     error_message = "A CodeBuild source type must be defined. Valid values are 'CODECOMMIT', 'CODEPIPELINE', 'GITHUB', 'GITHUB_ENTERPRISE', 'BITBUCKET', 'S3' and 'NO_SOURCE'"
   }
 }
@@ -100,4 +100,3 @@ variable "tags" {
   default     = {}
   description = "The tags for yoru CodeBuild Project."
 }
-

@@ -68,15 +68,15 @@ module "codecommit-aws-devops-core" {
 
 }
 # CodeCommit Repo - AWS Infrastructure Core
-module "codecommit-aws-infra-core" {
+module "codecommit-example-production-workload" {
   source = "../modules/module-aws-codecommit"
 
-  repository_name = "aws-infra-core"
-  description     = "The repo contains the configuration for the core AWS Infrastructure"
+  repository_name = "example-production-workload"
+  description     = "The repo contains the configuration for the example production resources."
   default_branch  = "main"
   tags = {
-    "ContentType"         = "AWS Infrastructure",
-    "Impact"              = "Core Workload Deployments"
+    "ContentType"         = "Example Production resources",
+    "Impact"              = "Example Production"
     "PrimaryOwner"        = "Kevon Mayers",
     "PrimaryOwnerTitle"   = "Solutions Architect",
     "SecondaryOwner"      = "Naruto Uzumaki",
@@ -87,32 +87,117 @@ module "codecommit-aws-infra-core" {
 
 
 # - CodeBuild Projects -
-module "project-tf-test-framework" {
+# CodeCommit Module Repo
+module "codebuild-tf-test-module-aws-codecommit" {
   source = "../modules/module-aws-codebuild"
 
-  # image source will be "hashicorp/terraform"
+  project_name              = "TerraformTest-module-aws-codecommit"
+  project_description       = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the `module-aws-codecommit` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codecommit.clone_url_http
+  path_to_build_spec        = "./buildspec/tf-test-buildspec.yml"
 
 }
-
-module "project-checkov-security-tests" {
+module "codebuild-checkov-module-aws-codecommit" {
   source = "../modules/module-aws-codebuild"
 
-  # image source will be "bridgecrew/checkov"
+  project_name              = "Checkov-module-aws-codecommit"
+  project_description       = "CodeBuild Project that uses Checkov to test the security of the `module-aws-codecommit` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codecommit.clone_url_http
+  path_to_build_spec        = "./buildspec/checkov-buildspec.yml"
 
 
 }
 
+# CodeBuild Module Repo
+module "codebuild-tf-test-module-aws-codebuild" {
+  source = "../modules/module-aws-codebuild"
 
-# - CodePipeline Pipelines -
-module "tf-module-validation-pipeline" {
-  source = "../modules/module-aws-codepipeline"
+  project_name              = "TerraformTest-module-aws-codebuild"
+  project_description       = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the `module-aws-codebuild` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codebuild.clone_url_http
+  path_to_build_spec        = "./buildspec/tf-test-buildspec.yml"
 
+}
+module "codebuild-checkov-module-aws-codebuild" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "Checkov-module-aws-codebuild"
+  project_description       = "CodeBuild Project that uses Checkov to test the security of the `module-aws-codebuild` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codebuild.clone_url_http
+  path_to_build_spec        = "./buildspec/checkov-buildspec.yml"
 
 }
 
-module "tf-deployment-pipeline" {
-  source = "../modules/module-aws-codepipeline"
 
+# CodePipeline Module Repo
+module "codebuild-tf-test-module-aws-codepipeline" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "TerraformTest-module-aws-codepipeline"
+  project_description       = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the `module-aws-codepipeline` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codepipeline.clone_url_http
+  path_to_build_spec        = "./buildspec/tf-test-buildspec.yml"
+
+}
+module "codebuild-checkov-module-aws-codepipeline" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "Checkov-module-aws-codepipeline"
+  project_description       = "CodeBuild Project that uses Checkov to test the security of the `module-aws-codepipeline` Terraform Module."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-module-aws-codepipeline.clone_url_http
+  path_to_build_spec        = "./buildspec/checkov-buildspec.yml"
+
+}
+
+
+# AWS DevOps Core Repo
+module "codebuild-tf-test-aws-devops-core" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "TerraformTest-aws-devops-core"
+  project_description       = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the `aws-devops-core` Terraform configuration."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-aws-devops-core.clone_url_http
+  path_to_build_spec        = "./buildspec/tf-test-buildspec.yml"
+
+}
+module "codebuild-checkov-aws-devops-core" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "Checkov-aws-devops-core"
+  project_description       = "CodeBuild Project that uses Checkov to test the security of the `aws-devops-core` Terraform configuration."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-aws-devops-core.clone_url_http
+  path_to_build_spec        = "./buildspec/checkov-buildspec.yml"
+
+}
+
+
+# Example Production Workload Repo
+module "codebuild-tf-test-example-production-workload" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "TerraformTest-example-production-workload"
+  project_description       = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the `example-production-workload` Terraform configuration."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-example-production-workload.clone_url_http
+  path_to_build_spec        = "./buildspec/tf-test-buildspec.yml"
+
+}
+module "codebuild-checkov-example-production-workload" {
+  source = "../modules/module-aws-codebuild"
+
+  project_name              = "Checkov-example-production-workload"
+  project_description       = "CodeBuild Project that uses Checkov to test the security of the `example-production-workload` Terraform configuration."
+  codebuild_source_type     = "CODECOMMIT"
+  codebuild_source_location = module.codecommit-example-production-workload.clone_url_http
+  path_to_build_spec        = "./buildspec/checkov-buildspec.yml"
 
 }
 
@@ -120,56 +205,25 @@ module "tf-deployment-pipeline" {
 
 
 
-module "codecommit-repos" {
-  source = "../modules/module-aws-tf-cicd"
-
-  project_prefix = "devops_core"
-  # project_prefix = "this_is_a_project_prefix_and_it_is_way_too_long_and_will_cause_a_failure"
-
-  codecommit_repos = {
-    # CodeCommit Repo for 'module-aws-tf-cicd' Terraform Module
-    AWS_TF_CICD_Module_Repo : {
-      repo_name      = "module-aws-tf-cicd"
-      description    = "The repo contains the config files for a Terraform module that can dynamically create AWS CodeCommit Repositories, AWS CodePipelines (and related necessary services) on AWS."
-      default_branch = "main"
-      tags = {
-        "ContentType"         = "Terraform Module",
-        "PrimaryOwner"        = "Kevon Mayers",
-        "PrimaryOwnerTitle"   = "Solutions Architect",
-        "SecondaryOwner"      = "Naruto Uzumaki",
-        "SecondaryOwnerTitle" = "Hokage",
-
-      }
-    },
-    # CodeCommit Repo for core AWS infrastructure for the account
-    AWS_Core_Infra_Repo : {
-      repo_name      = "module-aws-tf-cicd"
-      description    = "The repo contains the core AWS infrastructure for this account"
-      default_branch = "main"
-      tags = {
-        "ContentType"         = "Core AWS Infrastructure",
-        "PrimaryOwner"        = "Kevon Mayers",
-        "PrimaryOwnerTitle"   = "Solutions Architect",
-        "SecondaryOwner"      = "Naruto Uzumaki",
-        "SecondaryOwnerTitle" = "Hokage",
-      }
-    },
-
-  }
-}
 
 
+# module "project-checkov-security-tests" {
 
-# Create Terraform Module Validation Pipeline (TODO)
-module "tf-module-validation-pipeline" {
-  source = "../modules/module-aws-codepipeline"
-}
+#   # image source will be "bridgecrew/checkov"
 
 
+# }
 
 
+# # - CodePipeline Pipelines -
+# module "tf-module-validation-pipeline" {
+#   source = "../modules/module-aws-codepipeline"
 
-# Create Terraform Deployment Pipeline (TODO)
-module "tf-deployment-pipeline" {
-  source = "../modules/module-aws-codepipeline"
-}
+
+# }
+
+# module "tf-deployment-pipeline" {
+#   source = "../modules/module-aws-codepipeline"
+
+
+# }

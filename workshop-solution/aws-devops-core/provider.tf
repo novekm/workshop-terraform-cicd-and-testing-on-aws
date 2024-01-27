@@ -11,7 +11,7 @@ terraform {
 
 # Configure the AWS Provider
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
   # TODO - ADD S3 BACKEND LATER
 
   default_tags {

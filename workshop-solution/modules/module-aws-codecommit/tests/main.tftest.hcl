@@ -1,4 +1,4 @@
-# Instructions: Create basic tests
+# Instructions: Create basic tests for CodeCommit Module
 
 # Configure the AWS
 provider "aws" {
