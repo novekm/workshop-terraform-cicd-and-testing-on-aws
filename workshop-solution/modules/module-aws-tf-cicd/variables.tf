@@ -1,7 +1,6 @@
 # Instructions: Create Module Input Variables
 
-# Conditional Logic Variables
-
+# - Conditional Logic Variables -
 variable "create_codepipeline_artifacts_bucket" {
   type        = bool
   default     = true
@@ -27,6 +26,7 @@ variable "create_s3_remote_backend" {
 
 }
 
+# - Codecommit -
 variable "codecommit_repos" {
   type = map(object({
     repository_name = string
@@ -36,31 +36,9 @@ variable "codecommit_repos" {
   }))
   description = "Collection of AWS CodeCommit Repositories you wish to create"
   default     = {}
+
+  # TODO - Add validation block for unit testing
 }
-
-variable "project_prefix" {
-  type        = string
-  default     = "tf-workshop"
-  description = "The prefix for the current project"
-
-  validation {
-    condition     = length(var.project_prefix) > 1 && length(var.project_prefix) <= 40
-    error_message = "The defined 'project_prefix' has too many characters (${length(var.project_prefix)}). This can cause deployment failures for AWS resources with smaller character limits. Please reduce the character count and try again."
-  }
-
-}
-
-
-# - S3 -
-
-variable "s3_public_access_block" {
-  type        = bool
-  default     = true
-  description = "Conditional enabling of S3 Public Access Block"
-
-
-}
-
 
 # - CodeBuild -
 # variable "codebuild_projects" {
@@ -80,26 +58,51 @@ variable "codebuild_projects" {
 
     source_version     = optional(string, "main")
     source_type        = optional(string, "CODECOMMIT")
+    source_location    = optional(string, "NO_SOURCE")
     source_clone_depth = optional(number, 1)
     path_to_build_spec = optional(string, null)
     build_spec         = optional(string, null)
 
-
-
     tags = optional(map(any), { "ContentType" = "Terraform Module" })
+
   }))
   description = "Collection of AWS CodeBuild Projects you wish to create"
   default     = {}
 }
-
-
-
 variable "codebuild_service_role_arn" {
   type        = string
   default     = null
   description = "The ARN of the IAM Role you wish to use with CodeBuild."
 
 }
+
+# - S3 -
+variable "s3_public_access_block" {
+  type        = bool
+  default     = true
+  description = "Conditional enabling of S3 Public Access Block"
+
+
+}
+
+# - Project Prefix -
+variable "project_prefix" {
+  type        = string
+  default     = "tf-workshop"
+  description = "The prefix for the current project"
+
+  validation {
+    condition     = length(var.project_prefix) > 1 && length(var.project_prefix) <= 40
+    error_message = "The defined 'project_prefix' has too many characters (${length(var.project_prefix)}). This can cause deployment failures for AWS resources with smaller character limits. Please reduce the character count and try again."
+  }
+
+}
+
+
+
+
+
+
 
 # variable "codebuild_build_timeout" {
 #   type        = number
@@ -135,8 +138,9 @@ variable "codebuild_service_role_arn" {
 #   }
 # }
 
-variable "tags" {
-  type        = map(any)
-  default     = {}
-  description = "The tags for your CodeBuild Project."
-}
+# variable "tags" {
+#   type        = map(any)
+#   default     = {}
+#   description = "The tags for your CodeBuild Project."
+# }
+
