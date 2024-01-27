@@ -1,5 +1,10 @@
 # locals {
-#   all_codecommit_repos =
+#   pipeline_stages =
+#       for_each = [for s in each.value.stages : {
+#     # for_each = [for s in var.stages : {
+#       name   = s.name
+#       action = s.action
+#     } if(lookup(s, "enabled", true))]
 # }
 
 # locals {

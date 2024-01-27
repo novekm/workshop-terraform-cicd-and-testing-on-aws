@@ -56,9 +56,10 @@ variable "codebuild_projects" {
     env_image        = optional(string, "hashicorp/terraform:latest")
     env_type         = optional(string, "LINUX_CONTAINER")
 
-    source_version     = optional(string, "main")
-    source_type        = optional(string, "CODECOMMIT")
-    source_location    = optional(string, "NO_SOURCE")
+    source_version = optional(string, "main")
+    # Set to "NO_SOURCE" by default because we will be passing data via CodePipelien assets and input_artifacts for CodeBuild
+    source_type        = optional(string, "NO_SOURCE")
+    source_location    = optional(string, null)
     source_clone_depth = optional(number, 1)
     path_to_build_spec = optional(string, null)
     build_spec         = optional(string, null)
@@ -76,12 +77,46 @@ variable "codebuild_service_role_arn" {
 
 }
 
+# - CodePipeline -
+variable "codepipeline_pipelines" {
+  type = map(object({
+
+    name                    = string
+    pipeline_type           = optional(string, "V2")
+    stages                  = list(any)
+    existing_s3_bucket_name = optional(string, null)
+
+
+    tags = optional(map(any), { "Description" = "Pipeline" })
+
+  }))
+  description = "Collection of AWS CodeBuild Projects you wish to create"
+  default     = {}
+
+  validation {
+    condition     = alltrue([for pipeline in values(var.codepipeline_pipelines) : length(pipeline.name) > 3 && length(pipeline.name) <= 40])
+    error_message = "The name of one of the defined CodePipeline pipelines is too long. Pipeline names can be a maxmium of 40 characters, as the names are used by other resources throughout this module. This can cause deployment failures for AWS resources with smaller character limits for naming. Please ensure all pipeline names are 40 characters or less, and try again."
+  }
+}
+variable "codepipeline_service_role_arn" {
+  type        = string
+  default     = null
+  description = "The ARN of the IAM Role you wish to use with CodePipeline."
+
+}
+
+
 # - S3 -
+variable "existing_s3_bucket_name" {
+  type        = string
+  default     = null
+  description = "The name of the existing S3 bucket you wish to store the CodePipeline artifacts in."
+
+}
 variable "s3_public_access_block" {
   type        = bool
   default     = true
-  description = "Conditional enabling of S3 Public Access Block"
-
+  description = "Conditional enabling of S3 Public Access Block."
 
 }
 

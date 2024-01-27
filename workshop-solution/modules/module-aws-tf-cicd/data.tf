@@ -18,4 +18,12 @@
 #   depends_on      = [aws_codecommit_repository.codecommit_repo]
 # }
 
+# Current AWS region
+data "aws_region" "current" {}
+
+# output "currnt_region" {
+#   value = data.aws_region.current.name
+# }
+
+
 
