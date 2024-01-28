@@ -33,7 +33,7 @@ resource "aws_codebuild_project" "codebuild" {
     type = "NO_ARTIFACTS"
   }
 
-  depends_on = [aws_codecommit_repository.codecommit_repo]
+  depends_on = [aws_codecommit_repository.codecommit]
   tags       = each.value.tags
 
 }

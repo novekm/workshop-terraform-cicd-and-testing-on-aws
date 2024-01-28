@@ -219,7 +219,7 @@ module "codecommit-module-aws-codecommit" {
       name = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
       tags = {
         "Description"         = "Pipeline that validates functionality/security and deploys the Example Production Workload.",
-        "Usage"               = "Terraform Module Validation",
+        "Usage"               = "Example Production Workload",
         "PrimaryOwner"        = "Kevon Mayers",
         "PrimaryOwnerTitle"   = "Solutions Architect",
         "SecondaryOwner"      = "Naruto Uzumaki",
@@ -239,7 +239,7 @@ module "codecommit-module-aws-codecommit" {
               version  = "1"
               configuration = {
                 BranchName     = "main"
-                RepositoryName = local.module_aws_tf_cicd_repository_name
+                RepositoryName = local.aws_example_production_workload_repository_name
               }
               input_artifacts = []
               #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket
@@ -261,7 +261,7 @@ module "codecommit-module-aws-codecommit" {
               version  = "1"
               configuration = {
                 # Reference existing CodeBuild Project
-                ProjectName = local.tf_test_module_aws_tf_cicd_codebuild_project_name
+                ProjectName = local.tf_test_example_production_workload_codebuild_project_name
               }
               # Use the 'source_output_artifacts' contents from the Artifacts S3 Bucket
               input_artifacts = ["source_output_artifacts"]
@@ -285,12 +285,36 @@ module "codecommit-module-aws-codecommit" {
               version  = "1"
               configuration = {
                 # Reference existing CodeBuild Project
-                ProjectName = local.chevkov_module_aws_tf_cicd_codebuild_project_name
+                ProjectName = local.chevkov_example_production_workload_codebuild_project_name
               }
               # Use the 'source_output_artifacts' contents from the Artifacts S3 Bucket
               input_artifacts = ["source_output_artifacts"]
               # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_checkov_output_artifacts"]
+
+              run_order = 1
+            },
+          ]
+        },
+
+        # Apply Terraform
+        {
+          name = "Apply"
+          action = [
+            {
+              name     = "TerraformApply"
+              category = "Build"
+              owner    = "AWS"
+              provider = "CodeBuild"
+              version  = "1"
+              configuration = {
+                # Reference existing CodeBuild Project
+                ProjectName = local.tf_apply_example_production_workload_codebuild_project_name
+              }
+              # Use the 'source_output_artifacts' contents from the Artifacts S3 Bucket
+              input_artifacts = ["source_output_artifacts"]
+              # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
+              output_artifacts = ["build_tf_apply_output_artifacts"]
 
               run_order = 1
             },

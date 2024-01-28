@@ -37,14 +37,13 @@ variable "codecommit_repos" {
   description = "Collection of AWS CodeCommit Repositories you wish to create"
   default     = {}
 
-  # TODO - Add validation block for unit testing
+  validation {
+    condition     = alltrue([for repo in values(var.codecommit_repos) : length(repo.repository_name) > 1 && length(repo.repository_name) <= 100])
+    error_message = "The name of one of the defined CodeCodecommit Repositories is too long. Repository names can be a maxmium of 100 characters, as the names are used by other resources throughout this module. This can cause deployment failures for AWS resources with smaller character limits for naming. Please ensure all repository names are 100 characters or less, and try again."
+  }
 }
 
 # - CodeBuild -
-# variable "codebuild_projects" {
-#   type    = map(any)
-#   default = {}
-# }
 variable "codebuild_projects" {
   type = map(object({
 
@@ -69,6 +68,11 @@ variable "codebuild_projects" {
   }))
   description = "Collection of AWS CodeBuild Projects you wish to create"
   default     = {}
+
+  validation {
+    condition     = alltrue([for project in values(var.codebuild_projects) : length(project.name) > 3 && length(project.name) <= 40])
+    error_message = "The name of one of the defined CodeBuild Projects is too long. Project names can be a maxmium of 40 characters, as the names are used by other resources throughout this module. This can cause deployment failures for AWS resources with smaller character limits for naming. Please ensure all project names are 40 characters or less, and try again."
+  }
 }
 variable "codebuild_service_role_arn" {
   type        = string
@@ -132,50 +136,3 @@ variable "project_prefix" {
   }
 
 }
-
-
-
-
-
-
-
-# variable "codebuild_build_timeout" {
-#   type        = number
-#   default     = 60
-#   description = "The number of minutes from 5 to 480 (8 hours), for AWS CodeBuild to wait until timing out any build that does not get marked as completed. This option is not available for the 'Lambda' compute type."
-
-#   validation {
-#     condition     = var.codebuild_build_timeout < 5 && var.codebuild_build_timeout > 480
-#     error_message = "The defined 'codebuild_build_timeout' (${var.codebuild_build_timeout}) is not an acceptable value. The build_timeout must be greater than 5 or lesss than 480"
-#   }
-
-# }
-# variable "codebuild_env_compute_type" {
-#   type        = string
-#   default     = "BUILD_GENERAL1_SMALL"
-#   description = "The compute configuration of the CodeBuild server. See the docs for more info:https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-compute-types.html#environment.types"
-
-# }
-# variable "codebuild_env_image" {
-#   type        = string
-#   default     = "hashicorp/terraform:latest"
-#   description = "The Docker image to use for this build project. Valid values include Docker images provided by CodeBuild, Docker Hub images, and full Docker repository URIs sucj as those for ECR"
-
-# }
-# variable "codebuild_source_type" {
-#   type        = string
-#   description = "The type of repository that contains the source doe to be built. Valid values are 'CODECOMMIT', 'CODEPIPELINE', 'GITHUB', 'GITHUB_ENTERPRISE', 'BITBUCKET', 'S3' and 'NO_SOURCE'."
-#   default     = null
-
-#   validation {
-#     condition     = var.codebuild_source_type != null
-#     error_message = "A CodeBuild source type must be defined. Valid values are 'CODECOMMIT', 'CODEPIPELINE', 'GITHUB', 'GITHUB_ENTERPRISE', 'BITBUCKET', 'S3' and 'NO_SOURCE'"
-#   }
-# }
-
-# variable "tags" {
-#   type        = map(any)
-#   default     = {}
-#   description = "The tags for your CodeBuild Project."
-# }
-
