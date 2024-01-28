@@ -1,133 +1,52 @@
-# TODO - UPDATE THIS FILE
+# Instructions: Dynamically create AWS CodePipeline pipelines below
 
 resource "aws_codepipeline" "codepipeline" {
-  name     = "tf-test-pipeline"
-  role_arn = aws_iam_role.codepipeline_role.arn
+  for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
+
+  name          = each.value.name
+  pipeline_type = each.value.pipeline_type
+  role_arn      = var.codepipeline_service_role_arn != null ? var.codepipeline_service_role_arn : aws_iam_role.codepipeline_service_role[0].arn
 
   artifact_store {
-    location = aws_s3_bucket.codepipeline_bucket.bucket
+    # location = aws_s3_bucket.codepipeline_artifacts_bucket[0].id
+    location = each.value.existing_s3_bucket_name != null ? each.value.existing_s3_bucket_name : aws_s3_bucket.codepipeline_artifacts_buckets[each.key].id
     type     = "S3"
 
-    encryption_key {
-      id   = data.aws_kms_alias.s3kmskey.arn
-      type = "KMS"
-    }
   }
 
-  stage {
-    name = "Source"
 
-    action {
-      name     = "Source"
-      category = "Source"
-      owner    = "AWS"
-      provider = "CodeStarSourceConnection"
-      # provider         = "CodeStarSourceConnection" // only used if you need to use external git provider
-      version          = "1"
-      output_artifacts = ["source_output"]
+  dynamic "stage" {
+    for_each = [for s in each.value.stages : {
+      # for_each = [for s in var.stages : {
+      name   = s.name
+      action = s.action
+    } if(lookup(s, "enabled", true))]
 
-      configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.example.arn
-        FullRepositoryId = "my-organization/example"
-        BranchName       = "main"
+    # for_each = local.pipeline_stages
+
+    content {
+      name = stage.value.name
+      dynamic "action" {
+        for_each = stage.value.action
+        content {
+          name             = action.value["name"]
+          owner            = action.value["owner"]
+          version          = action.value["version"]
+          category         = action.value["category"]
+          provider         = action.value["provider"]
+          input_artifacts  = lookup(action.value, "input_artifacts", [])
+          output_artifacts = lookup(action.value, "output_artifacts", [])
+          configuration    = lookup(action.value, "configuration", {})
+          role_arn         = lookup(action.value, "role_arn", null)
+          run_order        = lookup(action.value, "run_order", null)
+          region           = lookup(action.value, "region", data.aws_region.current.name)
+        }
       }
     }
   }
 
-  stage {
-    name = "Build"
+  tags = each.value.tags
 
-    action {
-      name             = "Build"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
-      output_artifacts = ["build_output"]
-      version          = "1"
-
-      configuration = {
-        ProjectName = "test"
-      }
-    }
-  }
-
-  stage {
-    name = "Deploy"
-
-    action {
-      name            = "Deploy"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "CloudFormation"
-      input_artifacts = ["build_output"]
-      version         = "1"
-
-      configuration = {
-        ActionMode     = "REPLACE_ON_FAILURE"
-        Capabilities   = "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"
-        OutputFileName = "CreateStackOutput.json"
-        StackName      = "MyStack"
-        TemplatePath   = "build_output::sam-templated.yaml"
-      }
-    }
-  }
+  #checkov:skip=CKV_AWS_219: "Ensure Code Pipeline Artifact store is using a KMS CMK"
 }
 
-# Only needed if connecting to external git provider
-# resource "aws_codestarconnections_connection" "example" {
-#   name          = "example-connection"
-#   provider_type = "GitHub" // valid values are "BitBucket", "GitHub", or "GitHubEnterpriseServer"
-# }
-
-
-resource "aws_iam_role" "codepipeline_role" {
-  name               = "test-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-}
-
-data "aws_iam_policy_document" "codepipeline_policy" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "s3:GetObject",
-      "s3:GetObjectVersion",
-      "s3:GetBucketVersioning",
-      "s3:PutObjectAcl",
-      "s3:PutObject",
-    ]
-
-    resources = [
-      aws_s3_bucket.codepipeline_bucket.arn,
-      "${aws_s3_bucket.codepipeline_bucket.arn}/*"
-    ]
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = [aws_codestarconnections_connection.example.arn]
-  }
-
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "codebuild:BatchGetBuilds",
-      "codebuild:StartBuild",
-    ]
-
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_role_policy" "codepipeline_policy" {
-  name   = "codepipeline_policy"
-  role   = aws_iam_role.codepipeline_role.id
-  policy = data.aws_iam_policy_document.codepipeline_policy.json
-}
-
-data "aws_kms_alias" "s3kmskey" {
-  name = "alias/myKmsKey"
-}

@@ -1,23 +1,46 @@
-# CodePipeline
+# Instructions: Create resources for S3
 
-resource "random_uuid" "codepipeline_artifacts_s3_uuid" {
+resource "random_string" "codepipeline_artifacts_s3_buckets" {
+  for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
+  length   = 4
+  special  = false
+  upper    = false
 }
 
-resource "random_string" "codepipeline_artifacts_s3" {
-  length  = 8
-  special = false
+resource "aws_s3_bucket" "codepipeline_artifacts_buckets" {
+  for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
+  bucket   = "pipeline-artifacts-${each.value.name}-${random_string.codepipeline_artifacts_s3_buckets[each.key].result}"
 }
 
+resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pabs" {
+  for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
+  bucket   = aws_s3_bucket.codepipeline_artifacts_buckets[each.key].id
 
-resource "aws_s3_bucket" "codepipeline_artifacts_bucket" {
-  bucket = "codepipeline-artifacts-${random_string.codepipeline_artifacts_s3.result}"
+  block_public_acls       = var.s3_public_access_block
+  block_public_policy     = var.s3_public_access_block
+  ignore_public_acls      = var.s3_public_access_block
+  restrict_public_buckets = var.s3_public_access_block
 }
+# resource "random_string" "codepipeline_artifacts_s3_bucket" {
+#   count   = var.create_codepipeline_artifacts_bucket ? 1 : 0
+#   length  = 4
+#   special = false
+#   upper   = false
+# }
 
-resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pab" {
-  bucket = aws_s3_bucket.codepipeline_artifacts_bucket.id
+# resource "aws_s3_bucket" "codepipeline_artifacts_bucket" {
+#   count  = var.create_codepipeline_artifacts_bucket ? 1 : 0
+#   bucket = "${var.project_prefix}-codepipeline-artifacts-${random_string.codepipeline_artifacts_s3_bucket[0].result}"
+# }
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+# resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pab" {
+#   count  = var.create_codepipeline_artifacts_bucket ? 1 : 0
+#   bucket = aws_s3_bucket.codepipeline_artifacts_bucket[0].id
+
+#   block_public_acls       = var.s3_public_access_block
+#   block_public_policy     = var.s3_public_access_block
+#   ignore_public_acls      = var.s3_public_access_block
+#   restrict_public_buckets = var.s3_public_access_block
+# }
+
+
