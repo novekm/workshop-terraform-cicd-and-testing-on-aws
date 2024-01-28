@@ -94,7 +94,7 @@ variable "codepipeline_pipelines" {
     tags = optional(map(any), { "Description" = "Pipeline" })
 
   }))
-  description = "Collection of AWS CodeBuild Projects you wish to create"
+  description = "Collection of AWS CodePipeline Pipelines you wish to create"
   default     = {}
 
   validation {
