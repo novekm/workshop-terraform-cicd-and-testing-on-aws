@@ -26,7 +26,7 @@ data "aws_iam_policy_document" "codebuild_trust_relationship" {
 
 # - Policies -
 # CodePipeline
-# Challenge: restrict access further to solve Checkov issue
+# Challenge: restrict access further to resolve Checkov issue
 data "aws_iam_policy_document" "codepipeline_policy_restricted_access" {
   statement {
     effect    = "Allow"
@@ -43,7 +43,7 @@ resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
 }
 
 # CodeBuild
-# Challenge: restrict access further to solve Checkov issue
+# Challenge: restrict access further to resolve Checkov issue
 data "aws_iam_policy_document" "codebuild_policy_restricted_access" {
   count = var.create_codebuild_service_role ? 1 : 0
   statement {
@@ -67,7 +67,7 @@ resource "aws_iam_policy" "codebuild_policy_restricted_access" {
 
 # - IAM Roles -
 # CodePipeline
-# Challenge: restrict access further to solve Checkov issue
+# Challenge: restrict access further to resolve Checkov issue
 resource "aws_iam_role" "codepipeline_service_role" {
   count              = var.create_codepipeline_service_role ? 1 : 0
   name               = "${var.project_prefix}-codepipeline-service-role"
@@ -80,7 +80,7 @@ resource "aws_iam_role" "codepipeline_service_role" {
   #checkov:skip=CKV_AWS_274: "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 }
 # CodeBuild
-# Challenge: restrict access further to solve Checkov issue
+# Challenge: restrict access further to resolve Checkov issue
 resource "aws_iam_role" "codebuild_service_role" {
   count              = var.create_codebuild_service_role ? 1 : 0
   name               = "${var.project_prefix}-codebuild-service-role"
