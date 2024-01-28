@@ -1,4 +1,4 @@
-# Instructions: Dynamically create AWS CodePipeline pipelines below
+# Instructions: Dynamically create AWS CodePipeline pipelines
 
 resource "aws_codepipeline" "codepipeline" {
   for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines

@@ -55,8 +55,7 @@ variable "codebuild_projects" {
     env_image        = optional(string, "hashicorp/terraform:latest")
     env_type         = optional(string, "LINUX_CONTAINER")
 
-    source_version = optional(string, "main")
-    # Set to "NO_SOURCE" by default because we will be passing data via CodePipelien assets and input_artifacts for CodeBuild
+    source_version     = optional(string, "main")
     source_type        = optional(string, "NO_SOURCE")
     source_location    = optional(string, null)
     source_clone_depth = optional(number, 1)

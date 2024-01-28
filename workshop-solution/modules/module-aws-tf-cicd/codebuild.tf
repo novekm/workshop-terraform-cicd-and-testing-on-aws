@@ -1,8 +1,7 @@
-
-
-# Instructions: Dynamically create an AWS CodeBuild Project below
+# Instructions: Dynamically create AWS CodeBuild Projects
 
 resource "aws_codebuild_project" "codebuild" {
+  # Challenge: resolve Checkov issue
   for_each = var.codebuild_projects == null ? {} : var.codebuild_projects
 
   name          = each.value.name
@@ -18,9 +17,7 @@ resource "aws_codebuild_project" "codebuild" {
   }
 
   source {
-    type = each.value.source_type
-    # location = each.value.location
-    # location = data.aws_codecommit_repository.codecommit_repositories["ModuleAWSCodeCommit"].clone_url_ssh
+    type            = each.value.source_type
     location        = each.value.source_location
     git_clone_depth = each.value.source_clone_depth
     buildspec       = each.value.path_to_build_spec != null ? file("${each.value.path_to_build_spec}") : each.value.build_spec

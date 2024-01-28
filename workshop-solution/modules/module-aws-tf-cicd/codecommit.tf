@@ -1,6 +1,5 @@
-# Instructions: Dynamically create AWS CodeCommit Repos below
+# Instructions: Dynamically create AWS CodeCommit Repos
 
-# Create aws_codecommit_repository resource
 resource "aws_codecommit_repository" "codecommit" {
   for_each        = var.codecommit_repos == null ? {} : var.codecommit_repos
   repository_name = each.value.repository_name
