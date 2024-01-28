@@ -1,4 +1,4 @@
-# Instructions: Dynamically create an AWS CodeCommit Repo below
+# Instructions: Dynamically create AWS CodeCommit Repos below
 
 # Create aws_codecommit_repository resource
 resource "aws_codecommit_repository" "codecommit" {

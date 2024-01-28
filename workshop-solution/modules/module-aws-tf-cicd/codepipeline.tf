@@ -1,8 +1,5 @@
-# Instructions: Dynamically create an AWS CodePipeline pipeline below
+# Instructions: Dynamically create AWS CodePipeline pipelines below
 
-# Instructions: Create CodePipeline Resource
-
-# TODO - FIX THIS FILE, MIMIC WHAT IS IN THE CODEBUILD.TF FILE. ALSO ADD VARIABLE
 resource "aws_codepipeline" "codepipeline" {
   for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
 
