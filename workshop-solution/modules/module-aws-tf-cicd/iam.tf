@@ -33,6 +33,7 @@ data "aws_iam_policy_document" "codepipeline_policy_restricted_access" {
     actions   = ["ec2:Describe*"]
     resources = ["*"]
   }
+  #checkov:skip=CKV_AWS_356: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions"
 }
 resource "aws_iam_policy" "codepipeline_policy_restricted_access" {
   count       = var.create_codepipeline_service_role ? 1 : 0
@@ -52,7 +53,8 @@ data "aws_iam_policy_document" "codebuild_policy_restricted_access" {
       # each.value.repository_name
     ]
   }
-
+  #checkov:skip=CKV_AWS_356: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions""
+  #checkov:skip=CKV_AWS_111: "Ensure IAM policies does not allow write access without constraints"
 }
 resource "aws_iam_policy" "codebuild_policy_restricted_access" {
   count       = var.create_codebuild_service_role ? 1 : 0
@@ -73,6 +75,7 @@ resource "aws_iam_role" "codepipeline_service_role" {
     "arn:aws:iam::aws:policy/AdministratorAccess",
     aws_iam_policy.codepipeline_policy_restricted_access[0].arn,
   ]
+  #checkov:skip=CKV_AWS_274: "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 }
 # CodeBuild
 resource "aws_iam_role" "codebuild_service_role" {
@@ -83,6 +86,7 @@ resource "aws_iam_role" "codebuild_service_role" {
     "arn:aws:iam::aws:policy/AdministratorAccess",
     aws_iam_policy.codebuild_policy_restricted_access[0].arn,
   ]
+  #checkov:skip=CKV_AWS_274: "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 }
 
 

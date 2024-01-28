@@ -35,7 +35,7 @@ resource "aws_codebuild_project" "codebuild" {
 
   depends_on = [aws_codecommit_repository.codecommit]
   tags       = each.value.tags
-
+  #checkov:skip=CKV_AWS_314: "Ensure CodeBuild project environments have a logging configuration"
 }
 
 

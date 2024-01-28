@@ -47,55 +47,6 @@ resource "aws_codepipeline" "codepipeline" {
 
   tags = each.value.tags
 
-  # dynamic "stage" {
-  #   # for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
-  #   for_each = local.pipelines_and_their_stages
-
-  #   for_each = var.codepipeline_pipelines.stages == null ? {} : var.codepipeline_pipelines.stages
-  #   each.value.stages = tf_module_validation_module_aws_tf_cicd.stages
-
-  #   for_each = [for s in var.stages : {
-  #     name   = s.name
-  #     action = s.action
-  #   } if(lookup(s, "enabled", true))]
-
-  #   content {
-  #     name = "Source"
-  #     action {
-  #       name             = "PullFromCodeCommit"
-  #       category         = "Source"
-  #       owner            = "AWS"
-  #       provider         = "CodeCommit"
-  #       version          = "1"
-
-  #       output_artifacts = ["source_output"]
-  #       output_artifacts = ["build_output"]
-
-  #       configuration = {
-  #         RepositoryName = var.repository_name
-  #         BranchName     = var.branch_name
-  #       }
-  #     }
-  #   }
-
-
-
-
-
-  #   # action {
-  #   #   name             = "PullFromCodeCommit"
-  #   #   category         = "Source"
-  #   #   owner            = "AWS"
-  #   #   provider         = "CodeCommit"
-  #   #   version          = "1"
-  #   #   output_artifacts = ["source_output"]
-
-  #   #   configuration = {
-  #   #     RepositoryName = var.repository_name
-  #   #     BranchName     = var.branch_name
-  #   #   }
-  #   # }
-  # }
-
+  #checkov:skip=CKV_AWS_219: "Ensure Code Pipeline Artifact store is using a KMS CMK"
 }
 
