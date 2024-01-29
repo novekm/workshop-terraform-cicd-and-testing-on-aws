@@ -1,3 +1,4 @@
+# Terraform Test
 version: 0.1
 phases:
   pre_build:
@@ -7,4 +8,4 @@ phases:
 
   build:
     commands:
-      - terraform apply -auto-approve
+      - terraform test

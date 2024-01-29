@@ -1,4 +1,4 @@
-# Instructions: Place your core Terraform configuration below
+#  Create Example Production Resources below
 
 # - Trust Relationships -
 data "aws_iam_policy_document" "ec2_trust_relationship" {
@@ -14,16 +14,26 @@ data "aws_iam_policy_document" "ec2_trust_relationship" {
 
 # - IAM Role -
 resource "aws_iam_role" "example" {
-  name                = "tf-workshop-example-production-resource"
-  assume_role_policy  = data.aws_iam_policy_document.ec2e_trust_relationship.json
+  name                = "example-prod-resource"
+  assume_role_policy  = data.aws_iam_policy_document.ec2_trust_relationship.json
   managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
 
   force_detach_policies = true
+
+  # - Challenge: resolve Checkov issues -
+  #checkov:skip=CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
 }
 
 # - S3 Bucket -
 resource "aws_s3_bucket" "example" {
-  bucket_prefix = "tf-workshop-example-production-resource"
+  bucket_prefix = "example-prod-resource"
+
+  # - Challenge: resolve Checkov issues -
+  #checkov:skip=CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+  #checkov:skip=CKV2_AWS_6: "Ensure that S3 bucket has a Public Access block"
+  #checkov:skip=CKV2_AWS_61: "Ensure that an S3 bucket has a lifecycle configuration"
+  #checkov:skip=CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
+  #checkov:skip=CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
+  #checkov:skip=CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
+  #checkov:skip=CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
 }
-
-

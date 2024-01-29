@@ -1,1 +1,1 @@
-# TODO
+# TODO - Add info about workshop

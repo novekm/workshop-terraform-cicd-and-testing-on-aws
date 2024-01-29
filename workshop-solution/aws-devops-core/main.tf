@@ -119,7 +119,6 @@ module "module-aws-tf-cicd" {
     tf_apply_example_production_workload : {
       name        = local.tf_apply_example_production_workload_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the Example Production Workload."
-      env_image   = local.checkov_image
 
       path_to_build_spec = local.tf_apply_path_to_buildspec
 
