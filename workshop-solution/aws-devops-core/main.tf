@@ -12,9 +12,8 @@ module "module-aws-tf-cicd" {
     example_production_workload : {
       prefix = "example-prod-workload"
     },
-
-
   }
+
   # - Create CodeCommit Repos -
   codecommit_repos = {
     # Custom Terraform Module Repo
@@ -78,6 +77,7 @@ module "module-aws-tf-cicd" {
     chevkov_module_aws_tf_cicd : {
       name        = local.chevkov_module_aws_tf_cicd_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the 'module-aws-tf-cicd' Terraform Module."
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
 
@@ -94,6 +94,7 @@ module "module-aws-tf-cicd" {
     chevkov_aws_devops_core : {
       name        = local.chevkov_aws_devops_core_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the DevOps Core Infrastructure."
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
 
@@ -110,6 +111,7 @@ module "module-aws-tf-cicd" {
     chevkov_example_production_workload : {
       name        = local.chevkov_example_production_workload_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the Example Production Workload."
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
 
@@ -117,6 +119,7 @@ module "module-aws-tf-cicd" {
     tf_apply_example_production_workload : {
       name        = local.tf_apply_example_production_workload_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the Example Production Workload."
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.tf_apply_path_to_buildspec
 
@@ -211,6 +214,23 @@ module "module-aws-tf-cicd" {
         },
 
       ]
+
+      event_pattern = local.tf_module_validation_module_aws_tf_cicd_cloudwatch_event_pattern
+      # event_pattern = <<-EOF
+      #   {
+      #     "source": [ "aws.codecommit" ],
+      #     "detail-type": [ "CodeCommit Repository State Change" ],
+      #     "resources": [ "${local.module_aws_tf_cicd_repository_name}" ],
+      #     "detail": {
+      #       "event": [
+      #         "referenceCreated",
+      #         "referenceUpdated"
+      #         ],
+      #       "referenceType":["branch"],
+      #       "referenceName": ["${local.module_aws_tf_cicd_repository_name}"]
+      #     }
+      #   }
+      # EOF
 
     },
 
@@ -324,6 +344,8 @@ module "module-aws-tf-cicd" {
         },
 
       ]
+
+      event_pattern = local.tf_deployment_example_production_workload_cloudwatch_event_pattern
 
     },
 

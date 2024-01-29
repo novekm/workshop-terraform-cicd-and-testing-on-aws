@@ -13,6 +13,12 @@ variable "create_codepipeline_service_role" {
   description = "Conditional creation of CodePipeline IAM Role."
 
 }
+variable "create_cloudwatch_service_role" {
+  type        = bool
+  default     = true
+  description = "Conditional creation of Cloudwatch IAM Role."
+
+}
 variable "create_codebuild_service_role" {
   type        = bool
   default     = true
@@ -88,6 +94,7 @@ variable "codepipeline_pipelines" {
     pipeline_type           = optional(string, "V2")
     stages                  = list(any)
     existing_s3_bucket_name = optional(string, null)
+    event_pattern           = optional(string, null)
 
 
     tags = optional(map(any), { "Description" = "Pipeline" })

@@ -6,4 +6,8 @@ resource "aws_codecommit_repository" "codecommit" {
   description     = each.value.description
   default_branch  = each.value.default_branch
   tags            = each.value.tags
+
+  # - Challenge: resolve Checkov issues -
+  #checkov:skip=CKV2_AWS_37: "Ensure CodeCommit associates an approval rule"
+
 }

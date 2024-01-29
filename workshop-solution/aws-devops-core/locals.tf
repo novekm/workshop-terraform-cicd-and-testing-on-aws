@@ -33,6 +33,42 @@ locals {
   tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name   = "tf-module-validation-module-aws-tf-cicd"
   tf_deployment_example_production_workload_codepipeline_pipeline_name = "tf-deploy-example-prod-workload"
 
+  # - CloudWatch Triggers for CodePipeline
+  tf_module_validation_module_aws_tf_cicd_cloudwatch_event_pattern = <<-EOF
+        {
+          "source": [ "aws.codecommit" ],
+          "detail-type": [ "CodeCommit Repository State Change" ],
+          "resources": [ "${local.module_aws_tf_cicd_repository_name}" ],
+          "detail": {
+            "event": [
+              "referenceCreated",
+              "referenceUpdated"
+              ],
+            "referenceType":["branch"],
+            "referenceName": ["${local.cloudwatch_branch_to_monitor}"]
+          }
+        }
+      EOF
 
+  cloudwatch_branch_to_monitor                                       = "main"
+  tf_deployment_example_production_workload_cloudwatch_event_pattern = <<-EOF
+        {
+          "source": [ "aws.codecommit" ],
+          "detail-type": [ "CodeCommit Repository State Change" ],
+          "resources": [ "${local.example_production_workload_repository_name}" ],
+          "detail": {
+            "event": [
+              "referenceCreated",
+              "referenceUpdated"
+              ],
+            "referenceType":["branch"],
+            "referenceName": ["${local.cloudwatch_branch_to_monitor}"]
+          }
+        }
+      EOF
+
+
+  # Images
+  checkov_image = "bridgecrew/checkov"
 }
 

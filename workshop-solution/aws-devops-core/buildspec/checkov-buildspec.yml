@@ -1,11 +1,15 @@
-# CHECKOV
+# Checkov
 version: 0.1
 phases:
   pre_build:
     commands:
-      - terraform init
-      - terraform validate
+      - echo pre_build starting
 
   build:
     commands:
-      - terraform test
+      - echo build starting
+      - echo starting checkov
+      - ls
+      - checkov -d .
+      - echo saving checkov output
+      - checkov -s -d ./ > checkov.result.txt
