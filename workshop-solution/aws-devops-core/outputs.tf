@@ -1,3 +1,5 @@
+# Instructions: Place your outputs below
+
 # AWS DevOps Core
 output "aws_devops_core_s3_bucket_name" {
   value = module.module-aws-tf-cicd.tf_state_s3_buckets_names["aws_devops_core"]

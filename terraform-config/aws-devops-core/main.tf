@@ -12,9 +12,8 @@ module "module-aws-tf-cicd" {
     example_production_workload : {
       prefix = "example-prod-workload"
     },
-
-
   }
+
   # - Create CodeCommit Repos -
   codecommit_repos = {
     # Custom Terraform Module Repo

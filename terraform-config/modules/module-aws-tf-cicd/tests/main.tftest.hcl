@@ -636,6 +636,18 @@ variables {
 
   }
 
+  # Test Remote State Resources
+  tf_remote_state_resource_configs = {
+    # Custom Terraform Module Repo
+    aws_devops_core : {
+      prefix = "aws-devops-core"
+    },
+    example_production_workload : {
+      prefix = "example-prod-workload"
+    },
+  }
+
+
 }
 
 # - Unit Tests -
@@ -777,6 +789,14 @@ run "input_validation" {
 
     }
 
+    # Terraform Remote State Resources - Intentional prefix that is longer than max of 40 characters
+    tf_remote_state_resource_configs = {
+      # Custom Terraform Module Repo
+      example_production_workload : {
+        prefix = "this_is_a_prefix_name_and_it_is_longer_than_40_characters_and_will_fail"
+      },
+    }
+
   }
 
   # Check for intentional failure of variables defined above. We expect these to fail since we intentionally provided values that do not conform to the validation rules defined in the module's variable.tf file.
@@ -785,6 +805,7 @@ run "input_validation" {
     var.codecommit_repos,
     var.codebuild_projects,
     var.codepipeline_pipelines,
+    var.tf_remote_state_resource_configs,
 
   ]
 }
@@ -812,7 +833,20 @@ run "e2e_test" {
   # CodePipeline - Ensure pipelines have correct names after creation
   assert {
     condition     = aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name == "tf-module-validation-test-module-1"
-    error_message = "The CodeBuild Project name (${aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name}) didn't match the expected value (tf-module-validation-test-module-1)."
+    error_message = "The CodePipeline pipeline name (${aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name}) didn't match the expected value (tf-module-validation-test-module-1)."
+  }
+
+
+  # S3 Remote State - Ensure S3 Remote State buckets have correct names after creation
+  assert {
+    condition     = startswith(aws_s3_bucket.tf_remote_state_s3_buckets["example_production_workload"].id, "example-prod-workload")
+    error_message = "The S3 Remote State Bucket name (${aws_s3_bucket.tf_remote_state_s3_buckets["example_production_workload"].id}) did not start with the expected value (example-prod-workload)."
+  }
+
+  # DynamoDB Terraform State Lock Table - Ensure DynamoDB Terraform State Lock Tables have correct names after creation
+  assert {
+    condition     = startswith(aws_dynamodb_table.tf_remote_state_lock_tables["example_production_workload"].id, "example-prod-workload")
+    error_message = "The DynamoDB Terraform State Lock table name (${aws_dynamodb_table.tf_remote_state_lock_tables["example_production_workload"].id}) did not start with the expected value (example-prod-workload)."
   }
 
 

@@ -3,7 +3,7 @@
 # Current AWS region
 data "aws_region" "current" {}
 
-# output "currnt_region" {
+# output "current_region" {
 #   value = data.aws_region.current.name
 # }
 
