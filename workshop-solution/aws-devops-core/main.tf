@@ -1,10 +1,20 @@
-# Instructions: Place your core Terraform configuration below
+# Instructions: Place your core Terraform Module configuration below
 
-# - CodeCommit Repositories -
-# CodeCommit Repo - CodeCommit Terraform Module
 module "module-aws-tf-cicd" {
   source = "../modules/module-aws-tf-cicd"
 
+  # - Create S3 Remote State Resources -
+  tf_remote_state_resource_configs = {
+    # Custom Terraform Module Repo
+    aws_devops_core : {
+      prefix = "aws-devops-core"
+    },
+    example_production_workload : {
+      prefix = "example-prod-workload"
+    },
+
+
+  }
   # - Create CodeCommit Repos -
   codecommit_repos = {
     # Custom Terraform Module Repo
@@ -41,7 +51,7 @@ module "module-aws-tf-cicd" {
     # Example Production Workload Repo
     example_production_workload : {
 
-      repository_name = local.aws_example_production_workload_repository_name
+      repository_name = local.example_production_workload_repository_name
       description     = "The repo containing the configuration for the core example production workload."
       default_branch  = "main"
       tags = {
@@ -119,8 +129,6 @@ module "module-aws-tf-cicd" {
     # Terraform Module Validation Pipeline for 'module-aws-tf-cicd' Terraform Module
     tf_module_validation_module_aws_tf_cicd : {
       name = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
-
-      # name = "tf-module-validation-module-aws-tf-cicd"
 
       tags = {
         "Description"         = "Pipeline that validates functionality and security of the module-aws-tf-cicd Terraform Module.",
@@ -233,7 +241,7 @@ module "module-aws-tf-cicd" {
               version  = "1"
               configuration = {
                 BranchName     = "main"
-                RepositoryName = local.aws_example_production_workload_repository_name
+                RepositoryName = local.example_production_workload_repository_name
               }
               input_artifacts = []
               #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket

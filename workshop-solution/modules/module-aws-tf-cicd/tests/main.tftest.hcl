@@ -2,7 +2,7 @@
 
 # HINT: Make sure to run `terraform init` in this directory before running `terraform test`. Also, ensure you use constant values (e.g. string, number, bool, etc.) within your tests where at all possible or you may encounter errors.
 
-# Configure the AWS
+# Configure the AWS Provider
 provider "aws" {
   region = "us-east-1"
 }

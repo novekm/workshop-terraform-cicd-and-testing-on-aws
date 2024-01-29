@@ -1,9 +1,11 @@
+# Instructions: Place your locals below
+
 locals {
   # -- CodeCommit --
   # CodeCommit Repository Names
-  module_aws_tf_cicd_repository_name              = "module-aws-tf-cicd"
-  aws_devops_core_repository_name                 = "aws-devops-core"
-  aws_example_production_workload_repository_name = "example-production-workload"
+  module_aws_tf_cicd_repository_name          = "module-aws-tf-cicd"
+  aws_devops_core_repository_name             = "aws-devops-core"
+  example_production_workload_repository_name = "example-prod-workload"
 
 
   # -- CodeBuild --
@@ -33,3 +35,4 @@ locals {
 
 
 }
+
