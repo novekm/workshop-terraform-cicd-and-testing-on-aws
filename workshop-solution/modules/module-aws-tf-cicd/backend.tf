@@ -8,8 +8,9 @@ resource "random_string" "tf_remote_state_s3_buckets" {
 }
 
 resource "aws_s3_bucket" "tf_remote_state_s3_buckets" {
-  for_each = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
-  bucket   = "${each.value.prefix}-tf-state-${random_string.tf_remote_state_s3_buckets[each.key].result}"
+  for_each      = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
+  bucket        = "${each.value.prefix}-tf-state-${random_string.tf_remote_state_s3_buckets[each.key].result}"
+  force_destroy = true
 
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"

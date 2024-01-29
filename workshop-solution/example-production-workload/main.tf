@@ -27,6 +27,7 @@ resource "aws_iam_role" "example" {
 # - S3 Bucket -
 resource "aws_s3_bucket" "example" {
   bucket_prefix = "example-prod-resource"
+  force_destroy = true
 
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
