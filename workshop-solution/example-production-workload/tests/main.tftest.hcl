@@ -1,2 +1,41 @@
 # Instructions: Create basic tests for Example Production Workload
 
+# HINT: Make sure to run `terraform init` in this directory before running `terraform test`. Also, ensure you use constant values (e.g. string, number, bool, etc.) within your tests where at all possible or you may encounter errors.
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+
+# - End-to-end Tests -
+run "e2e_test" {
+  command = apply
+
+  # Using global variables defined above since additional variables block is not defined here
+  variables {
+    aws_region = "us-east-1"
+  }
+
+  # Assertions
+  # IAM Role - Ensure the role has the correct name, trust policy, and managed policies after creation
+  assert {
+    condition     = aws_iam_role.example.name == "example-prod-resource"
+    error_message = "The IAM Role name (${aws_iam_role.example.name}) didn't match the expected value (example-prod-resource)."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.example.assume_role_policy)["Statement"][0]["Principal"]["Service"] == "ec2.amazonaws.com"
+    error_message = "The IAM role trust policy (${aws_iam_role.example.assume_role_policy}) did not trust the expected service principal (ec2.amazonaws.com)"
+  }
+  assert {
+    condition     = contains(aws_iam_role.example.managed_policy_arns, "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess")
+    error_message = "The IAM role managed policies ${aws_iam_role.example.managed_policy_arns} does contain the expected managed policy (arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess)."
+  }
+
+  # S3 - Ensure S3 Bucket have correct names after creation
+  assert {
+    condition     = startswith(aws_s3_bucket.example.id, "example-prod-resource")
+    error_message = "The S3 Remote State Bucket name (${aws_s3_bucket.example.id}) did not start with the expected value (example-prod-resource)."
+  }
+}
+
