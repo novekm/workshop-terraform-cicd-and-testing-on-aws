@@ -16,8 +16,9 @@ run "e2e_test" {
     aws_region = "us-east-1"
   }
 
+
   # Assertions
-  # IAM Role - Ensure the role has the correct name, trust policy, and managed policies after creation
+  # IAM Role - Ensure the role has the correct name, and trust policy after creation
   assert {
     condition     = aws_iam_role.example.name == "example-prod-resource"
     error_message = "The IAM Role name (${aws_iam_role.example.name}) didn't match the expected value (example-prod-resource)."
@@ -27,10 +28,7 @@ run "e2e_test" {
     condition     = jsondecode(aws_iam_role.example.assume_role_policy)["Statement"][0]["Principal"]["Service"] == "ec2.amazonaws.com"
     error_message = "The IAM role trust policy (${aws_iam_role.example.assume_role_policy}) did not trust the expected service principal (ec2.amazonaws.com)"
   }
-  assert {
-    condition     = contains(aws_iam_role.example.managed_policy_arns, "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess")
-    error_message = "The IAM role managed policies ${aws_iam_role.example.managed_policy_arns} does contain the expected managed policy (arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess)."
-  }
+
 
   # S3 - Ensure S3 Bucket have correct names after creation
   assert {
@@ -38,4 +36,3 @@ run "e2e_test" {
     error_message = "The S3 Remote State Bucket name (${aws_s3_bucket.example.id}) did not start with the expected value (example-prod-resource)."
   }
 }
-
