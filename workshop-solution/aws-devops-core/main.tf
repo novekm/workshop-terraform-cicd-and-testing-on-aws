@@ -1,5 +1,16 @@
 # Instructions: Place your core Terraform Module configuration below
 
+resource "aws_sns_topic" "manual_approval_sns_topic" {
+  name = "manual-approval-sns-topic"
+}
+
+resource "aws_sns_topic_subscription" "manual_approval_sns_subscription" {
+  topic_arn = aws_sns_topic.manual_approval_sns_topic.arn
+  protocol  = "email"
+  endpoint  = "example@email.com" # Replace with your email address
+}
+
+
 module "module-aws-tf-cicd" {
   source = "../modules/module-aws-tf-cicd"
 
@@ -72,7 +83,6 @@ module "module-aws-tf-cicd" {
       description = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the 'module-aws-tf-cicd' Terraform Module."
 
       path_to_build_spec = local.tf_test_path_to_buildspec
-
     },
     chevkov_module_aws_tf_cicd : {
       name        = local.chevkov_module_aws_tf_cicd_codebuild_project_name
@@ -80,7 +90,6 @@ module "module-aws-tf-cicd" {
       env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
-
     },
 
     # DevOps Core Infrastructure 'aws-devops-core'
@@ -89,7 +98,6 @@ module "module-aws-tf-cicd" {
       description = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the DevOps Core Infrastructure."
 
       path_to_build_spec = local.tf_test_path_to_buildspec
-
     },
     chevkov_aws_devops_core : {
       name        = local.chevkov_aws_devops_core_codebuild_project_name
@@ -97,7 +105,6 @@ module "module-aws-tf-cicd" {
       env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
-
     },
 
     # Example Production Workload 'example-production-workload'
@@ -106,7 +113,6 @@ module "module-aws-tf-cicd" {
       description = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the Example Production Workload."
 
       path_to_build_spec = local.tf_test_path_to_buildspec
-
     },
     chevkov_example_production_workload : {
       name        = local.chevkov_example_production_workload_codebuild_project_name
@@ -114,16 +120,13 @@ module "module-aws-tf-cicd" {
       env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
-
     },
     tf_apply_example_production_workload : {
       name        = local.tf_apply_example_production_workload_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the Example Production Workload."
 
       path_to_build_spec = local.tf_apply_path_to_buildspec
-
     },
-
   }
 
   codepipeline_pipelines = {
@@ -211,26 +214,9 @@ module "module-aws-tf-cicd" {
             },
           ]
         },
-
       ]
 
       event_pattern = local.tf_module_validation_module_aws_tf_cicd_cloudwatch_event_pattern
-      # event_pattern = <<-EOF
-      #   {
-      #     "source": [ "aws.codecommit" ],
-      #     "detail-type": [ "CodeCommit Repository State Change" ],
-      #     "resources": [ "${local.module_aws_tf_cicd_repository_name}" ],
-      #     "detail": {
-      #       "event": [
-      #         "referenceCreated",
-      #         "referenceUpdated"
-      #         ],
-      #       "referenceType":["branch"],
-      #       "referenceName": ["${local.module_aws_tf_cicd_repository_name}"]
-      #     }
-      #   }
-      # EOF
-
     },
 
 
@@ -318,6 +304,29 @@ module "module-aws-tf-cicd" {
           ]
         },
 
+        # Add Manual Approval
+        {
+          name = "Manual_Approval"
+          action = [
+            {
+              name     = "ManualApprovalAction"
+              category = "Approval"
+              owner    = "AWS"
+              provider = "Manual"
+              version  = "1"
+              configuration = {
+                CustomData      = "Please approve this deployment."
+                NotificationArn = aws_sns_topic.manual_approval_sns_topic.arn
+              }
+
+              input_artifacts  = []
+              output_artifacts = []
+
+              run_order = 1
+            },
+          ]
+        },
+
         # Apply Terraform
         {
           name = "Apply"
@@ -345,9 +354,8 @@ module "module-aws-tf-cicd" {
       ]
 
       event_pattern = local.tf_deployment_example_production_workload_cloudwatch_event_pattern
-
     },
-
   }
-
 }
+
+
