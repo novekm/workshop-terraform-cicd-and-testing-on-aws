@@ -32,7 +32,7 @@ resource "aws_iam_role" "example" {
 
 # - S3 Bucket -
 resource "aws_s3_bucket" "example" {
-  bucket_prefix = "example-prod-resource-new"
+  bucket_prefix = "example-prod-resource"
   force_destroy = true
 
   # - Challenge: resolve Checkov issues -
