@@ -1,5 +1,4 @@
 # Instructions: Create resources for S3
-
 resource "random_string" "codepipeline_artifacts_s3_buckets" {
   for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
   length   = 4
@@ -31,5 +30,3 @@ resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_pabs" {
   ignore_public_acls      = var.s3_public_access_block
   restrict_public_buckets = var.s3_public_access_block
 }
-
-

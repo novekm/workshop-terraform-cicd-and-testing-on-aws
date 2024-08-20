@@ -1,5 +1,4 @@
 # Instructions: Dynamically create AWS CodeBuild Projects
-
 resource "aws_codebuild_project" "codebuild" {
 
   for_each = var.codebuild_projects == null ? {} : var.codebuild_projects
@@ -13,7 +12,6 @@ resource "aws_codebuild_project" "codebuild" {
     compute_type = each.value.env_compute_type
     image        = each.value.env_image
     type         = each.value.env_type
-
   }
 
   source {
@@ -21,7 +19,6 @@ resource "aws_codebuild_project" "codebuild" {
     location        = each.value.source_location
     git_clone_depth = each.value.source_clone_depth
     buildspec       = each.value.path_to_build_spec != null ? file("${each.value.path_to_build_spec}") : each.value.build_spec
-
   }
 
   source_version = each.value.source_version
@@ -30,12 +27,13 @@ resource "aws_codebuild_project" "codebuild" {
     type = "NO_ARTIFACTS"
   }
 
-  depends_on = [aws_codecommit_repository.codecommit]
-  tags       = each.value.tags
+  depends_on = [
+    aws_s3_bucket.git_module_aws_tf_cicd_bucket,
+    aws_s3_bucket.git_aws_devops_core_bucket,
+    aws_s3_bucket.git_example_prod_workload_bucket,
+  ]
+  tags = each.value.tags
 
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV_AWS_314: "Ensure CodeBuild project environments have a logging configuration"
-
 }
-
-

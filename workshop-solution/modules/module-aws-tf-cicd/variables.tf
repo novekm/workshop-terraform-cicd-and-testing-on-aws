@@ -1,5 +1,4 @@
 # Instructions: Create Module Input Variables
-
 # - Conditional Logic Variables -
 variable "create_codepipeline_artifacts_bucket" {
   type        = bool
@@ -130,9 +129,23 @@ variable "s3_public_access_block" {
 
 }
 
+# - EventBridge -
+variable "eventbridge_rules_enable_force_destroy" {
+  description = "Enable force destroy on all EventBridge rules. This allows the destruction of all events in the rule."
+  type        = bool
+  default     = true
+}
+
+# - IAM -
+variable "enable_force_detach_policies" {
+  description = "Enable force detaching any policies from IAM roles."
+  type        = bool
+  default     = true
+}
+
 
 # Terraform Remote State Resources
-# - Codecommit -
+# - CodeCommit -
 variable "tf_remote_state_resource_configs" {
   type = map(object({
     prefix           = optional(string, "my-prefix")
@@ -163,5 +176,13 @@ variable "project_prefix" {
     condition     = length(var.project_prefix) > 1 && length(var.project_prefix) <= 40
     error_message = "The defined 'project_prefix' has too many characters (${length(var.project_prefix)}). This can cause deployment failures for AWS resources with smaller character limits. Please reduce the character count and try again."
   }
+}
 
+# - Tags -
+variable "tags" {
+  type        = map(any)
+  description = "Tags to apply to resources."
+  default = {
+    "IAC_PROVIDER" = "Terraform"
+  }
 }

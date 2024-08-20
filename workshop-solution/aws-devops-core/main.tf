@@ -1,5 +1,4 @@
 # Instructions: Place your core Terraform Module configuration below
-
 resource "aws_sns_topic" "manual_approval_sns_topic" {
   name = "manual-approval-sns-topic"
 }
@@ -7,9 +6,8 @@ resource "aws_sns_topic" "manual_approval_sns_topic" {
 resource "aws_sns_topic_subscription" "manual_approval_sns_subscription" {
   topic_arn = aws_sns_topic.manual_approval_sns_topic.arn
   protocol  = "email"
-  endpoint  = "example@email.com" # Replace with your email address
+  endpoint  = "novekm@amazon.com" # Replace with your email address
 }
-
 
 module "module-aws-tf-cicd" {
   source = "../modules/module-aws-tf-cicd"
@@ -132,7 +130,7 @@ module "module-aws-tf-cicd" {
   codepipeline_pipelines = {
 
     # Terraform Module Validation Pipeline for 'module-aws-tf-cicd' Terraform Module
-    tf_module_validation_module_aws_tf_cicd : {
+    module_aws_tf_cicd : {
       name = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
 
       tags = {
@@ -156,8 +154,9 @@ module "module-aws-tf-cicd" {
               provider = "CodeCommit"
               version  = "1"
               configuration = {
-                BranchName     = "main"
-                RepositoryName = local.module_aws_tf_cicd_repository_name
+                BranchName           = "main"
+                RepositoryName       = local.module_aws_tf_cicd_repository_name
+                PollForSourceChanges = false
               }
               input_artifacts = []
               #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket
@@ -186,7 +185,7 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_tf_test_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_test_output_artifacts"]
 
-              run_order = 1
+              run_order = 2
             },
           ]
         },
@@ -210,18 +209,17 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_checkov_output_artifacts"]
 
-              run_order = 1
+              run_order = 3
             },
           ]
         },
       ]
 
-      event_pattern = local.tf_module_validation_module_aws_tf_cicd_cloudwatch_event_pattern
     },
 
 
     # Terraform Deployment Pipeline for 'example-production workload'
-    tf_deployment_example_production_workload : {
+    example_production_workload : {
 
       name = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
       tags = {
@@ -245,8 +243,9 @@ module "module-aws-tf-cicd" {
               provider = "CodeCommit"
               version  = "1"
               configuration = {
-                BranchName     = "main"
-                RepositoryName = local.example_production_workload_repository_name
+                BranchName           = "main"
+                RepositoryName       = local.example_production_workload_repository_name
+                PollForSourceChanges = false
               }
               input_artifacts = []
               #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket
@@ -275,7 +274,7 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_tf_test_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_test_output_artifacts"]
 
-              run_order = 1
+              run_order = 2
             },
           ]
         },
@@ -299,7 +298,7 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_checkov_output_artifacts"]
 
-              run_order = 1
+              run_order = 3
             },
           ]
         },
@@ -322,10 +321,11 @@ module "module-aws-tf-cicd" {
               input_artifacts  = []
               output_artifacts = []
 
-              run_order = 1
+              run_order = 4
             },
           ]
         },
+
 
         # Apply Terraform
         {
@@ -346,16 +346,14 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_apply_output_artifacts"]
 
-              run_order = 1
+              run_order = 5
             },
           ]
         },
 
       ]
 
-      event_pattern = local.tf_deployment_example_production_workload_cloudwatch_event_pattern
     },
   }
 }
-
 

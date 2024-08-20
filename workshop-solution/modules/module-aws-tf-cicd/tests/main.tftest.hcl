@@ -1,5 +1,3 @@
-# Instructions: Create basic tests
-
 # HINT: Make sure to run `terraform init` in this directory before running `terraform test`. Also, ensure you use constant values (e.g. string, number, bool, etc.) within your tests where at all possible or you may encounter errors.
 
 # Configure the AWS Provider
@@ -9,19 +7,6 @@ provider "aws" {
 
 # Global Testing Variables - Define variables to be used in all tests here. You can overwrite these varibles by definig an additional variables block within the 'run' block for your tests
 variables {
-
-  # - Test CodeCommit Repos -
-  codecommit_repos = {
-    # Test Module 1
-    test_module_1 : {
-      repository_name = "test-module-1"
-      description     = "Test Module 1."
-      default_branch  = "main"
-      tags = {
-        "ContentType" = "Test Module",
-      }
-    },
-  }
 
   # - Test CodeBuild Projects -
   codebuild_projects = {
@@ -42,7 +27,6 @@ variables {
             commands:
               - terraform test
       EOF
-
     },
     chevkov_test_module_1 : {
       name        = "Checkov-test-module-1"
@@ -61,10 +45,7 @@ variables {
               - checkov -s -d ./ > checkov.result.txt
 
       EOF
-
     },
-
-
   }
 
   # - Test CodePipeline pipelines -
@@ -75,23 +56,23 @@ variables {
       name = "tf-module-validation-test-module-1"
       tags = {
         "Description" = "Test Module 1.",
-
       }
 
       stages = [
-        # Clone from CodeCommit, store contents in  artifacts S3 Bucket
+        # Clone from S3, store contents in  artifacts S3 Bucket
         {
           name = "Source"
           action = [
             {
-              name     = "PullFromCodeCommit"
+              name     = "PullFromS3"
               category = "Source"
               owner    = "AWS"
-              provider = "CodeCommit"
+              provider = "S3"
               version  = "1"
               configuration = {
-                BranchName     = "main"
-                RepositoryName = "test-module-1"
+                S3Bucket = "git-module-aws-tf-cicd-<YOUR-AWS-ACCOUNT-ID>"
+                S3ObjectKey = "archive.zip"
+                PollForSourceChanges = false
               }
               input_artifacts = []
               #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket
@@ -148,27 +129,8 @@ variables {
             },
           ]
         },
-
       ]
-
-      event_pattern = <<-EOF
-        {
-          "source": [ "aws.codecommit" ],
-          "detail-type": [ "CodeCommit Repository State Change" ],
-          "resources": [ "test-module-1" ],
-          "detail": {
-            "event": [
-              "referenceCreated",
-              "referenceUpdated"
-              ],
-            "referenceType":["branch"],
-            "referenceName": ["main"]
-          }
-        }
-        EOF
-
     },
-
   }
 
   # Test Remote State Resources
@@ -178,8 +140,6 @@ variables {
       prefix = "test-tf-remote-state-config-1"
     },
   }
-
-
 }
 
 # - Unit Tests -
@@ -190,22 +150,6 @@ run "input_validation" {
   variables {
     # Intentional project_prefix that is longer than max of 40 characters (overwrite of above global variable)
     project_prefix = "this_is_a_project_prefix_and_it_is_over_40_characters_and_will_cause_a_failure"
-
-    # CodeCommit - Intentional repository name that is longer than max of 40 characters
-    codecommit_repos = {
-      # Test Module 1 Repo
-      test_module_1 : {
-
-        repository_name = "this_is_a_repository_name_loger_than_100_characters_7rfD86rGwuqhF3TH9d3Y99r7vq6JZBZJkhw5h4eGEawBntZmvy"
-        description     = "Test Module 1."
-        default_branch  = "main"
-        tags = {
-          "ContentType" = "Test Module 1",
-
-        },
-      },
-
-    }
 
     # CodeBuild - Intentional project name that is longer than max of 40 characters
     codebuild_projects = {
@@ -226,10 +170,7 @@ run "input_validation" {
               commands:
                 - terraform test
         EOF
-
       },
-
-
     }
 
     # CodePipeline - Intentional pipeline name that is longer than max of 40 characters
@@ -244,19 +185,20 @@ run "input_validation" {
         }
 
         stages = [
-          # Clone from CodeCommit, store contents in  artifacts S3 Bucket
+          # Clone from S3, store contents in  artifacts S3 Bucket
           {
             name = "Source"
             action = [
               {
-                name     = "PullFromCodeCommit"
+                name     = "PullFromS3"
                 category = "Source"
                 owner    = "AWS"
-                provider = "CodeCommit"
+                provider = "S3"
                 version  = "1"
                 configuration = {
-                  BranchName     = "main"
-                  RepositoryName = "test-module-1"
+                  S3Bucket = "git-module-aws-tf-cicd-<YOUR-AWS-ACCOUNT-ID>"
+                  S3ObjectKey = "archive.zip"
+                  PollForSourceChanges = false
                 }
                 input_artifacts = []
                 #  Store the output of this stage as 'source_output_artifacts' in connected the Artifacts S3 Bucket
@@ -313,28 +255,8 @@ run "input_validation" {
               },
             ]
           },
-
         ]
-
-        event_pattern = <<-EOF
-        {
-          "source": [ "aws.codecommit" ],
-          "detail-type": [ "CodeCommit Repository State Change" ],
-          "resources": [ "this_is_a_repository_name_loger_than_100_characters_7rfD86rGwuqhF3TH9d3Y99r7vq6JZBZJkhw5h4eGEawBntZmvy" ],
-          "detail": {
-            "event": [
-              "referenceCreated",
-              "referenceUpdated"
-              ],
-            "referenceType":["branch"],
-            "referenceName": ["main"]
-          }
-        }
-        EOF
-
       },
-
-
     }
 
     # Terraform Remote State Resources - Intentional prefix that is longer than max of 40 characters
@@ -344,17 +266,14 @@ run "input_validation" {
         prefix = "this_is_a_prefix_name_and_it_is_longer_than_40_characters_and_will_fail"
       },
     }
-
   }
 
   # Check for intentional failure of variables defined above. We expect these to fail since we intentionally provided values that do not conform to the validation rules defined in the module's variable.tf file.
   expect_failures = [
     var.project_prefix,
-    var.codecommit_repos,
     var.codebuild_projects,
     var.codepipeline_pipelines,
     var.tf_remote_state_resource_configs,
-
   ]
 }
 
@@ -365,11 +284,6 @@ run "e2e_test" {
   # Using global variables defined above since additional variables block is not defined here
 
   # Assertions
-  # CodeCommit - Ensure repositories have correct names after creation
-  assert {
-    condition     = aws_codecommit_repository.codecommit["test_module_1"].repository_name == "test-module-1"
-    error_message = "The CodeCommit Repo name (${aws_codecommit_repository.codecommit["test_module_1"].repository_name}) didn't match the expected value."
-  }
 
   # CodeBuild - Ensure projects have correct names after creation
   assert {
@@ -377,13 +291,11 @@ run "e2e_test" {
     error_message = "The CodeBuild Project name (${aws_codebuild_project.codebuild["tf_test_test_module_1"].name}) didn't match the expected value (TerraformTest-test-module-1)."
   }
 
-
   # CodePipeline - Ensure pipelines have correct names after creation
   assert {
     condition     = aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name == "tf-module-validation-test-module-1"
     error_message = "The CodePipeline pipeline name (${aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name}) didn't match the expected value (tf-module-validation-test-module-1)."
   }
-
 
   # S3 Remote State - Ensure S3 Remote State buckets have correct names after creation
   assert {
@@ -396,6 +308,4 @@ run "e2e_test" {
     condition     = startswith(aws_dynamodb_table.tf_remote_state_lock_tables["test_tf_remote_state_config_1"].id, "test-tf-remote-state-config-1")
     error_message = "The DynamoDB Terraform State Lock table name (${aws_dynamodb_table.tf_remote_state_lock_tables["test_tf_remote_state_config_1"].id}) did not start with the expected value (test-tf-remote-state-config-1)."
   }
-
-
 }
