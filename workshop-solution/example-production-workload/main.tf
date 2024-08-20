@@ -1,5 +1,4 @@
 #  Create Example Production Resources below
-
 # - Trust Relationships -
 data "aws_iam_policy_document" "ec2_trust_relationship" {
   statement {
@@ -32,7 +31,7 @@ resource "aws_iam_role" "example" {
 
 # - S3 Bucket -
 resource "aws_s3_bucket" "example" {
-  bucket_prefix = "example-prod-resource"
+  bucket_prefix = "example-prod-resource-new"
   force_destroy = true
 
   # - Challenge: resolve Checkov issues -
@@ -44,4 +43,3 @@ resource "aws_s3_bucket" "example" {
   #checkov:skip=CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
   #checkov:skip=CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
 }
-

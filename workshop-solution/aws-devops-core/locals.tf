@@ -1,6 +1,12 @@
 # Instructions: Place your locals below
-
 locals {
+  # -- CodeCommit --
+  # CodeCommit Repository Names
+  module_aws_tf_cicd_repository_name          = "module-aws-tf-cicd"
+  aws_devops_core_repository_name             = "aws-devops-core"
+  example_production_workload_repository_name = "example-prod-workload"
+
+
   # -- CodeBuild --
   # - CodeBuild Project Names -
   # 'module-aws-tf-cicd' Build Projects
@@ -23,8 +29,8 @@ locals {
 
   # -- CodePipeline --
   # - CodePipeline Pipeline Names -
-  tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name   = "tf-module-validation-module-aws-tf-cicd"
-  tf_deployment_example_production_workload_codepipeline_pipeline_name = "tf-deploy-example-prod-workload"
+  tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name   = "module-aws-tf-cicd"
+  tf_deployment_example_production_workload_codepipeline_pipeline_name = "example-prod-workload"
 
   # Images
   checkov_image = "bridgecrew/checkov"

@@ -27,12 +27,16 @@ resource "aws_codebuild_project" "codebuild" {
     type = "NO_ARTIFACTS"
   }
 
+  tags = merge(
+    {
+      "Name" = "${each.value.name}"
+    },
+    var.tags,
+  )
+
   depends_on = [
-    aws_s3_bucket.git_module_aws_tf_cicd_bucket,
-    aws_s3_bucket.git_aws_devops_core_bucket,
-    aws_s3_bucket.git_example_prod_workload_bucket,
+    aws_codecommit_repository.codecommit
   ]
-  tags = each.value.tags
 
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV_AWS_314: "Ensure CodeBuild project environments have a logging configuration"
