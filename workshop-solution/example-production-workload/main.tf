@@ -19,14 +19,14 @@ resource "random_string" "example" {
 
 # - IAM Role -
 resource "aws_iam_role" "example" {
-  name                = "example-prod-resource-${random_string.example.result}"
-  assume_role_policy  = data.aws_iam_policy_document.ec2_trust_relationship.json
-  managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
+  name               = "example-prod-resource-${random_string.example.result}"
+  assume_role_policy = data.aws_iam_policy_document.ec2_trust_relationship.json
 
   force_detach_policies = true
-
-  # - Challenge: resolve Checkov issues -
-  #checkov:skip=CKV2_AWS_62: "Ensure S3 buckets should have event notifications enabled"
+}
+resource "aws_iam_role_policy_attachment" "example" {
+  role       = aws_iam_role.example.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
 # - S3 Bucket -
