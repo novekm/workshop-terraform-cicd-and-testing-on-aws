@@ -8,6 +8,8 @@ resource "aws_ecr_repository" "checkov_image" {
   image_scanning_configuration {
     scan_on_push = true
   }
+
+  force_delete = true # This will allow us to delete all images before deleting the repository
 }
 
 # Pull and push latest image using null_resource
