@@ -6,3 +6,9 @@ variable "aws_region" {
   default     = "us-east-1"
 
 }
+
+variable "checkov_ecr_repository_name" {
+  type        = string
+  default     = "checkov"
+  description = "The name of the ECR repository you wish to create for the checkov image."
+}

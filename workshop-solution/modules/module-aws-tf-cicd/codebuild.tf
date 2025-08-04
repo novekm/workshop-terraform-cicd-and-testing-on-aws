@@ -9,9 +9,10 @@ resource "aws_codebuild_project" "codebuild" {
   service_role  = var.codebuild_service_role_arn != null ? var.codebuild_service_role_arn : aws_iam_role.codebuild_service_role[0].arn
 
   environment {
-    compute_type = each.value.env_compute_type
-    image        = each.value.env_image
-    type         = each.value.env_type
+    compute_type                = each.value.env_compute_type
+    image                       = each.value.env_image
+    type                        = each.value.env_type
+    image_pull_credentials_type = each.value.image_pull_credentials_type
   }
 
   source {

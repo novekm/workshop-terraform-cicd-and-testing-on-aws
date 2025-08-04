@@ -56,9 +56,10 @@ variable "codebuild_projects" {
     description   = optional(string, null)
     build_timeout = optional(number, 60)
 
-    env_compute_type = optional(string, "BUILD_GENERAL1_SMALL")
-    env_image        = optional(string, "public.ecr.aws/hashicorp/terraform:latest")
-    env_type         = optional(string, "LINUX_CONTAINER")
+    env_compute_type            = optional(string, "BUILD_GENERAL1_SMALL")
+    env_image                   = optional(string, "public.ecr.aws/hashicorp/terraform:latest")
+    env_type                    = optional(string, "LINUX_CONTAINER")
+    image_pull_credentials_type = optional(string, "SERVICE_ROLE")
 
     source_version     = optional(string, "main")
     source_type        = optional(string, "NO_SOURCE")
