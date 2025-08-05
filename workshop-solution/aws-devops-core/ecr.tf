@@ -16,22 +16,22 @@ resource "aws_ecr_repository" "checkov_image" {
 resource "null_resource" "docker_push" {
   triggers = {
     # This will only trigger on repository creation or if the repository URL changes
-    repository_url = aws_ecr_repository.checkov_image.repository_url
+    repository_url = local.checkov_image
   }
 
   provisioner "local-exec" {
     command = <<EOF
       # Login to ECR
-      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${aws_ecr_repository.checkov_image.repository_url}
+      aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${local.checkov_image}
       
       # Pull latest image from DockerHub
-      docker pull ${local.checkov_image}
+      docker pull ${local.dockerhub_checkov_image}
       
       # Tag the image for ECR
-      docker tag ${local.checkov_image}:${local.checkov_tag} ${aws_ecr_repository.checkov_image.repository_url}:${local.checkov_tag}
+      docker tag ${local.dockerhub_checkov_image}:${local.checkov_tag} ${local.checkov_image}:${local.checkov_tag}
       
       # Push to ECR
-      docker push ${aws_ecr_repository.checkov_image.repository_url}:${local.checkov_tag}
+      docker push ${local.checkov_image}:${local.checkov_tag}
     EOF
   }
 
