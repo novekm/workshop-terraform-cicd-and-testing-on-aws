@@ -85,7 +85,7 @@ module "module-aws-tf-cicd" {
     chevkov_module_aws_tf_cicd : {
       name        = local.chevkov_module_aws_tf_cicd_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the 'module-aws-tf-cicd' Terraform Module."
-      env_image   = aws_ecr_repository.checkov_image.repository_url
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
     },
@@ -100,7 +100,7 @@ module "module-aws-tf-cicd" {
     chevkov_aws_devops_core : {
       name        = local.chevkov_aws_devops_core_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the DevOps Core Infrastructure."
-      env_image   = aws_ecr_repository.checkov_image.repository_url
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
     },
@@ -115,7 +115,7 @@ module "module-aws-tf-cicd" {
     chevkov_example_production_workload : {
       name        = local.chevkov_example_production_workload_codebuild_project_name
       description = "CodeBuild Project that uses Checkov to test the security of the Example Production Workload."
-      env_image   = aws_ecr_repository.checkov_image.repository_url
+      env_image   = local.checkov_image
 
       path_to_build_spec = local.checkov_path_to_buildspec
     },
