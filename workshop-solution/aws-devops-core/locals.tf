@@ -33,6 +33,7 @@ locals {
   tf_deployment_example_production_workload_codepipeline_pipeline_name = "example-prod-workload"
 
   # Images
-  checkov_image = "bridgecrew/checkov"
+  checkov_image = "bridgecrew/checkov:latest"
+  checkov_tag   = "latest"
 }
 
