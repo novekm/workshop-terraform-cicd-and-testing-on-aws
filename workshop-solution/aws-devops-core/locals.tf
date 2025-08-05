@@ -33,7 +33,8 @@ locals {
   tf_deployment_example_production_workload_codepipeline_pipeline_name = "example-prod-workload"
 
   # Images
-  checkov_image = "bridgecrew/checkov:latest"
-  checkov_tag   = "latest"
+  checkov_image           = aws_ecr_repository.checkov_image.repository_url
+  dockerhub_checkov_image = "bridgecrew/checkov"
+  checkov_tag             = "latest"
 }
 
