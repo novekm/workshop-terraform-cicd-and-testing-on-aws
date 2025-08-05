@@ -75,7 +75,7 @@ module "module-aws-tf-cicd" {
 
   # - Create CodeBuild Projects -
   codebuild_projects = {
-    # Terraform Module 'module'aws-tf-cicd'
+    # Terraform Module 'module-aws-tf-cicd'
     tf_test_module_aws_tf_cicd : {
       name        = local.tf_test_module_aws_tf_cicd_codebuild_project_name
       description = "CodeBuild Project that uses the Terraform Test Framework to test the functionality of the 'module-aws-tf-cicd' Terraform Module."

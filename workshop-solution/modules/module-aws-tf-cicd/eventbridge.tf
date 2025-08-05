@@ -28,9 +28,9 @@ resource "aws_cloudwatch_event_rule" "default_event_bus_to_tf_workshop_event_bus
       "CodeCommit Repository State Change"
     ],
     resources = [
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
     ]
     detail = {
       event = [
@@ -78,9 +78,9 @@ resource "aws_cloudwatch_event_rule" "invoke_codepipeline" {
       "CodeCommit Repository State Change"
     ],
     resources = [
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
-      "arn:aws:codecommit:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
+      "arn:aws:codecommit:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:${each.value.name}",
     ]
     detail = {
       event = [
