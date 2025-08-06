@@ -162,7 +162,6 @@ resource "aws_iam_role" "eventbridge_invoke_codepipeline" {
   name                  = "${var.project_prefix}-eventbridge-invoke-codepipeline-${random_string.random_string.result}"
   assume_role_policy    = data.aws_iam_policy_document.eventbridge_trust_relationship.json
   force_detach_policies = var.enable_force_detach_policies
-
   tags = merge(
     var.tags,
     {
@@ -190,7 +189,6 @@ resource "aws_iam_role_policy_attachment" "codebuild_service_role" {
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV_AWS_274: "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 }
-
 
 # CodePipeline
 resource "aws_iam_role" "codepipeline_service_role" {
