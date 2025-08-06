@@ -149,7 +149,7 @@ resource "aws_iam_role" "eventbridge_invoke_tf_workshop_event_bus" {
   name               = "${var.project_prefix}-eventbridge-invoke-tf-workshop-event-bus-${random_string.random_string.result}"
   assume_role_policy = data.aws_iam_policy_document.eventbridge_trust_relationship.json
 }
-resource "aws_iam_role_policy_attachment" "eventbridge_invoke_tf_workshop_event_bus_attachment" {
+resource "aws_iam_role_policy_attachment" "eventbridge_invoke_tf_workshop_event_bus" {
   count      = var.create_cloudwatch_service_role ? 1 : 0
   role       = aws_iam_role.eventbridge_invoke_tf_workshop_event_bus[0].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
@@ -169,10 +169,11 @@ resource "aws_iam_role" "eventbridge_invoke_codepipeline" {
     },
   )
 }
-resource "aws_iam_role_policy_attachment" "eventbridge_invoke_codepipeline_attachment" {
+resource "aws_iam_role_policy_attachment" "eventbridge_invoke_codepipeline" {
   role       = aws_iam_role.eventbridge_invoke_codepipeline.name
   policy_arn = aws_iam_policy.eventbridge_invoke_codepipeline_policy.arn
 }
+
 
 # CodeBuild
 resource "aws_iam_role" "codebuild_service_role" {
@@ -180,7 +181,7 @@ resource "aws_iam_role" "codebuild_service_role" {
   name               = "${var.project_prefix}-codebuild-service-role-${random_string.random_string.result}"
   assume_role_policy = data.aws_iam_policy_document.codebuild_trust_relationship.json
 }
-resource "aws_iam_role_policy_attachment" "codebuild_service_role_attachment" {
+resource "aws_iam_role_policy_attachment" "codebuild_service_role" {
   count      = var.create_codebuild_service_role ? 1 : 0
   role       = aws_iam_role.codebuild_service_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
@@ -195,7 +196,7 @@ resource "aws_iam_role" "codepipeline_service_role" {
   name               = "${var.project_prefix}-codepipeline-service-role-${random_string.random_string.result}"
   assume_role_policy = data.aws_iam_policy_document.codepipeline_trust_relationship.json
 }
-resource "aws_iam_role_policy_attachment" "codepipeline_service_role_attachment" {
+resource "aws_iam_role_policy_attachment" "codepipeline_service_role" {
   count      = var.create_codepipeline_service_role ? 1 : 0
   role       = aws_iam_role.codepipeline_service_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
