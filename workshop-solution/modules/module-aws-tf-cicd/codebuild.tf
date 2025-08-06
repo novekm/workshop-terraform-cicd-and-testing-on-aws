@@ -1,4 +1,5 @@
-# Instructions: Dynamically create AWS CodeBuild Projects
+# Instructions: Create resources for CodeBuild below
+
 resource "aws_codebuild_project" "codebuild" {
 
   for_each = var.codebuild_projects == null ? {} : var.codebuild_projects
@@ -34,10 +35,6 @@ resource "aws_codebuild_project" "codebuild" {
     },
     var.tags,
   )
-
-  depends_on = [
-    aws_codecommit_repository.codecommit
-  ]
 
   # - Challenge: resolve Checkov issues -
   #checkov:skip=CKV_AWS_314: "Ensure CodeBuild project environments have a logging configuration"

@@ -7,7 +7,7 @@ resource "random_string" "random_string" {
 
 
 # - Trust Relationships -
-# EventBridge
+# EventBridge (for S3 event notifications)
 data "aws_iam_policy_document" "eventbridge_trust_relationship" {
   statement {
     effect  = "Allow"
@@ -42,27 +42,8 @@ data "aws_iam_policy_document" "codepipeline_trust_relationship" {
 }
 
 # - Policies -
-# Eventbridge - Default to TF Workshop Event Bus
-data "aws_iam_policy_document" "eventbridge_invoke_tf_workshop_event_bus_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "events:PutEvents",
-    ]
-    resources = [
-      aws_cloudwatch_event_bus.tf_workshop_event_bus.arn,
-    ]
-  }
-}
-resource "aws_iam_policy" "eventbridge_invoke_tf_workshop_event_bus_policy" {
-  count       = var.create_cloudwatch_service_role ? 1 : 0
-  name        = "${var.project_prefix}-cloudwatch-service-role-policy-${random_string.random_string.result}"
-  description = "Policy allowing events on the Default Event Bus to invoke the TF Workshop Event Bus."
-  policy      = data.aws_iam_policy_document.eventbridge_invoke_tf_workshop_event_bus_policy.json
-}
-
-# Eventbridge - Invoke CodePipeline
-data "aws_iam_policy_document" "eventbridge_invoke_codepipeline_policy" {
+# S3 Event Notifications - Invoke CodePipeline
+data "aws_iam_policy_document" "s3_trigger_codepipeline_policy" {
   statement {
     effect = "Allow"
     actions = [
@@ -77,15 +58,15 @@ data "aws_iam_policy_document" "eventbridge_invoke_codepipeline_policy" {
   #checkov:skip=CKV_AWS_356: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions""
   #checkov:skip=CKV_AWS_111: "Ensure IAM policies does not allow write access without constraints"
 }
-resource "aws_iam_policy" "eventbridge_invoke_codepipeline_policy" {
-  name        = "${var.project_prefix}-eventbridge-invoke-codepipeline-${random_string.random_string.result}"
-  description = "Policy that allows EventBridge to invoke the any CodePipelines."
-  policy      = data.aws_iam_policy_document.eventbridge_invoke_codepipeline_policy.json
+resource "aws_iam_policy" "s3_trigger_codepipeline_policy" {
+  name        = "${var.project_prefix}-s3-trigger-codepipeline-${random_string.random_string.result}"
+  description = "Policy that allows S3 event notifications to trigger CodePipeline executions."
+  policy      = data.aws_iam_policy_document.s3_trigger_codepipeline_policy.json
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_prefix}-eventbridge-invoke-codepipeline"
+      Name = "${var.project_prefix}-s3-trigger-codepipeline"
     },
   )
 }
@@ -143,35 +124,21 @@ resource "aws_iam_policy" "codepipeline_policy" {
 
 
 # - IAM Roles -
-# EventBridge
-resource "aws_iam_role" "eventbridge_invoke_tf_workshop_event_bus" {
-  count              = var.create_cloudwatch_service_role ? 1 : 0
-  name               = "${var.project_prefix}-eventbridge-invoke-tf-workshop-event-bus-${random_string.random_string.result}"
-  assume_role_policy = data.aws_iam_policy_document.eventbridge_trust_relationship.json
-}
-resource "aws_iam_role_policy_attachment" "eventbridge_invoke_tf_workshop_event_bus" {
-  count      = var.create_cloudwatch_service_role ? 1 : 0
-  role       = aws_iam_role.eventbridge_invoke_tf_workshop_event_bus[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
-
-  # - Challenge: resolve Checkov issues -
-  #checkov:skip=CKV_AWS_274: "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
-}
-
-resource "aws_iam_role" "eventbridge_invoke_codepipeline" {
-  name                  = "${var.project_prefix}-eventbridge-invoke-codepipeline-${random_string.random_string.result}"
+# S3 Event Notifications to trigger CodePipeline
+resource "aws_iam_role" "s3_trigger_codepipeline" {
+  name                  = "${var.project_prefix}-s3-trigger-codepipeline-${random_string.random_string.result}"
   assume_role_policy    = data.aws_iam_policy_document.eventbridge_trust_relationship.json
   force_detach_policies = var.enable_force_detach_policies
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_prefix}-eventbridge-invoke-codepipeline"
+      Name = "${var.project_prefix}-s3-trigger-codepipeline"
     },
   )
 }
-resource "aws_iam_role_policy_attachment" "eventbridge_invoke_codepipeline" {
-  role       = aws_iam_role.eventbridge_invoke_codepipeline.name
-  policy_arn = aws_iam_policy.eventbridge_invoke_codepipeline_policy.arn
+resource "aws_iam_role_policy_attachment" "s3_trigger_codepipeline" {
+  role       = aws_iam_role.s3_trigger_codepipeline.name
+  policy_arn = aws_iam_policy.s3_trigger_codepipeline_policy.arn
 }
 
 

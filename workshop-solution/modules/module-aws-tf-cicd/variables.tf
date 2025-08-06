@@ -1,4 +1,3 @@
-# Instructions: Create Module Input Variables
 # - Conditional Logic Variables -
 variable "create_codepipeline_artifacts_bucket" {
   type        = bool
@@ -31,20 +30,20 @@ variable "create_s3_remote_backend" {
 
 }
 
-# - Codecommit -
-variable "codecommit_repos" {
+# - Git Remote S3 Buckets -
+variable "git_remote_s3_buckets" {
   type = map(object({
-    repository_name = string
-    description     = optional(string, null)
-    default_branch  = optional(string, "main")
-    tags            = optional(map(any), { "ContentType" = "Terraform Module" })
+    bucket_name    = string
+    description    = optional(string, null)
+    versioning     = optional(bool, true)
+    tags           = optional(map(any), { "ContentType" = "Git Remote S3" })
   }))
-  description = "Collection of AWS CodeCommit Repositories you wish to create"
+  description = "Collection of S3 buckets to use as git remotes with git-remote-s3"
   default     = {}
 
   validation {
-    condition     = alltrue([for repo in values(var.codecommit_repos) : length(repo.repository_name) > 1 && length(repo.repository_name) <= 100])
-    error_message = "The name of one of the defined CodeCodecommit Repositories is too long. Repository names can be a maxmium of 100 characters, as the names are used by other resources throughout this module. This can cause deployment failures for AWS resources with smaller character limits for naming. Please ensure all repository names are 100 characters or less, and try again."
+    condition     = alltrue([for bucket in values(var.git_remote_s3_buckets) : length(bucket.bucket_name) > 1 && length(bucket.bucket_name) <= 63])
+    error_message = "The name of one of the defined S3 buckets is invalid. S3 bucket names must be between 3 and 63 characters long. Please ensure all bucket names meet this requirement and try again."
   }
 }
 
@@ -130,12 +129,7 @@ variable "s3_public_access_block" {
 
 }
 
-# - EventBridge -
-variable "eventbridge_rules_enable_force_destroy" {
-  description = "Enable force destroy on all EventBridge rules. This allows the destruction of all events in the rule."
-  type        = bool
-  default     = true
-}
+
 
 # - IAM -
 variable "enable_force_detach_policies" {

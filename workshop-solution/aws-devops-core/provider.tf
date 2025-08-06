@@ -19,9 +19,6 @@ terraform {
   #   encrypt        = true
   #   dynamodb_table = "add-your-dynamodb-table-name-here"
   # }
-
-
-
 }
 
 
