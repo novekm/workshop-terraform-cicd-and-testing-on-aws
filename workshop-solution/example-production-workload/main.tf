@@ -31,7 +31,7 @@ resource "aws_iam_role_policy_attachment" "example" {
 
 # - S3 Bucket -
 resource "aws_s3_bucket" "example" {
-  bucket_prefix = "example-prod-resource"
+  bucket_prefix = "example-prod-resource-new" // updated bucket_prefix
   force_destroy = true
 
   # - Challenge: resolve Checkov issues -
