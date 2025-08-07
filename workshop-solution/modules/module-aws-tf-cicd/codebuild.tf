@@ -1,4 +1,4 @@
-# Instructions: Create resources for CodeBuild below
+# Instructions: Dynamically create AWS CodeBuild Projects
 
 resource "aws_codebuild_project" "codebuild" {
 

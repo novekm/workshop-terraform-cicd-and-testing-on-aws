@@ -1,4 +1,4 @@
-# Instructions: Create resources for Terraform Remote State below
+# Instructions: Dynamically create resources for S3 Remote Backend (Amazon S3 and DynamoDB)
 
 resource "random_string" "tf_remote_state_s3_buckets" {
   for_each = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
@@ -8,8 +8,8 @@ resource "random_string" "tf_remote_state_s3_buckets" {
 }
 
 resource "aws_s3_bucket" "tf_remote_state_s3_buckets" {
-  for_each = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
-  bucket   = "${each.value.prefix}-tf-state-${random_string.tf_remote_state_s3_buckets[each.key].result}"
+  for_each      = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
+  bucket        = "${each.value.prefix}-tf-state-${random_string.tf_remote_state_s3_buckets[each.key].result}"
   force_destroy = true
 
   # - Challenge: resolve Checkov issues -

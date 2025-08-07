@@ -1,4 +1,4 @@
-# Instructions: Place your outputs below
+# Instructions: Create output values for the module
 
 output "tf_state_s3_buckets_names" {
   value = tomap({

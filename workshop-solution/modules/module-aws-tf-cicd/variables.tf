@@ -1,3 +1,5 @@
+# Instructions: Create Module Input Variables
+
 # - Conditional Logic Variables -
 variable "create_codepipeline_artifacts_bucket" {
   type        = bool
@@ -33,12 +35,20 @@ variable "create_s3_remote_backend" {
 # - Git Remote S3 Buckets -
 variable "git_remote_s3_buckets" {
   type = map(object({
-    bucket_name    = string
-    description    = optional(string, null)
-    versioning     = optional(bool, true)
-    tags           = optional(map(any), { "ContentType" = "Git Remote S3" })
+    bucket_name = string
+    description = optional(string, null)
+    versioning  = optional(bool, true)
+    tags        = optional(map(any), { "ContentType" = "Git Remote S3" })
   }))
-  description = "Collection of S3 buckets to use as git remotes with git-remote-s3"
+  description = <<-EOT
+    Collection of S3 buckets to use as git remotes with git-remote-s3. This is dynamic and lets you configure each bucket separately.
+
+    Object fields:
+    - bucket_name: The name of the S3 bucket
+    - description: Description of the bucket (optional)
+    - versioning: Enable S3 bucket versioning (default: true)
+    - tags: Tags to apply to the bucket (default: {"ContentType" = "Git Remote S3"})
+  EOT
   default     = {}
 
   validation {
@@ -70,7 +80,25 @@ variable "codebuild_projects" {
     tags = optional(map(any), { "ContentType" = "Terraform Module" })
 
   }))
-  description = "Collection of AWS CodeBuild Projects you wish to create"
+  description = <<-EOT
+    Collection of AWS CodeBuild Projects you wish to create. This is dynamic and lets you configure each project separately.
+
+    Object fields:
+    - name: The name of the CodeBuild project
+    - description: Description of the project (optional)
+    - build_timeout: Build timeout in minutes (default: 60)
+    - env_compute_type: Compute type for build environment (default: "BUILD_GENERAL1_SMALL")
+    - env_image: Docker image for build environment (default: "public.ecr.aws/hashicorp/terraform:latest")
+    - env_type: Environment type (default: "LINUX_CONTAINER")
+    - image_pull_credentials_type: Credentials type for pulling images (default: "SERVICE_ROLE")
+    - source_version: Source version/branch (default: "main")
+    - source_type: Source type (default: "NO_SOURCE")
+    - source_location: Source location URL (optional)
+    - source_clone_depth: Git clone depth (default: 1)
+    - path_to_build_spec: Path to buildspec file (optional)
+    - build_spec: Inline buildspec content (optional)
+    - tags: Tags to apply to the project (default: {"ContentType" = "Terraform Module"})
+  EOT
   default     = {}
 
   validation {
@@ -90,6 +118,7 @@ variable "codepipeline_pipelines" {
   type = map(object({
 
     name                    = string
+    git_source              = string
     pipeline_type           = optional(string, "V2")
     stages                  = list(any)
     existing_s3_bucket_name = optional(string, null)
@@ -99,12 +128,31 @@ variable "codepipeline_pipelines" {
     tags = optional(map(any), { "Description" = "Pipeline" })
 
   }))
-  description = "Collection of AWS CodePipeline Pipelines you wish to create"
+  description = <<-EOT
+    Collection of AWS CodePipeline Pipelines you wish to create. This is dynamic and lets you configure each pipeline separately.
+
+    Object fields:
+    - name: The name of the CodePipeline pipeline
+    - git_source: Key from the git_remote_s3_buckets map that this pipeline monitors for git changes. Must match an existing key in git_remote_s3_buckets.
+    - pipeline_type: The type of pipeline (default: "V2")
+    - stages: List of pipeline stages configuration
+    - existing_s3_bucket_name: Name of existing S3 bucket for artifacts (optional)
+    - event_pattern: Custom event pattern for triggering (optional)
+    - tags: Tags to apply to the pipeline (default: {"Description" = "Pipeline"})
+  EOT
   default     = {}
 
   validation {
     condition     = alltrue([for pipeline in values(var.codepipeline_pipelines) : length(pipeline.name) > 3 && length(pipeline.name) <= 40])
     error_message = "The name of one of the defined CodePipeline pipelines is too long. Pipeline names can be a maxmium of 40 characters, as the names are used by other resources throughout this module. This can cause deployment failures for AWS resources with smaller character limits for naming. Please ensure all pipeline names are 40 characters or less, and try again."
+  }
+
+  validation {
+    condition = alltrue([
+      for pipeline in values(var.codepipeline_pipelines) :
+      contains(keys(var.git_remote_s3_buckets), pipeline.git_source)
+    ])
+    error_message = "Pipeline git_source must reference an existing key in git_remote_s3_buckets. Available keys: ${join(", ", keys(var.git_remote_s3_buckets))}"
   }
 }
 variable "codepipeline_service_role_arn" {
@@ -140,14 +188,20 @@ variable "enable_force_detach_policies" {
 
 
 # Terraform Remote State Resources
-# - CodeCommit -
 variable "tf_remote_state_resource_configs" {
   type = map(object({
     prefix           = optional(string, "my-prefix")
     ddb_billing_mode = optional(string, "PAY_PER_REQUEST")
     ddb_hash_key     = optional(string, "LockID")
   }))
-  description = "Configurations for Terraform State Resources"
+  description = <<-EOT
+    Configurations for Terraform State Resources. This is dynamic and lets you configure state backend resources.
+
+    Object fields:
+    - prefix: Prefix for resource names (default: "my-prefix")
+    - ddb_billing_mode: DynamoDB billing mode (default: "PAY_PER_REQUEST")
+    - ddb_hash_key: DynamoDB hash key (default: "LockID")
+  EOT
   default     = {}
 
   validation {

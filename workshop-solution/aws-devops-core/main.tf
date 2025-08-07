@@ -1,4 +1,5 @@
 # Instructions: Place your core Terraform Module configuration below
+
 resource "aws_sns_topic" "manual_approval_sns_topic" {
   name = "manual-approval-sns-topic"
 }
@@ -6,7 +7,7 @@ resource "aws_sns_topic" "manual_approval_sns_topic" {
 resource "aws_sns_topic_subscription" "manual_approval_sns_subscription" {
   topic_arn = aws_sns_topic.manual_approval_sns_topic.arn
   protocol  = "email"
-  endpoint  = "novekm@amazon.com" # Replace with your email address
+  endpoint  = "your@email.com" # Replace with your email address
 }
 
 module "module-aws-tf-cicd" {
@@ -28,7 +29,7 @@ module "module-aws-tf-cicd" {
     # Custom Terraform Module Repo
     module_aws_tf_cicd = {
       bucket_name = local.module_aws_tf_cicd_bucket_name
-      description = "S3 bucket for git-remote-s3 containing the 'module-aws-tf-cicd' Terraform Module."
+      description = "S3 bucket for git-remote-s3 containing the module-aws-tf-cicd Terraform Module."
       versioning  = true
       tags = {
         "ContentType"         = "Terraform Module"
@@ -128,7 +129,8 @@ module "module-aws-tf-cicd" {
 
     # Terraform Module Validation Pipeline for 'module-aws-tf-cicd' Terraform Module
     tf_module_validation_module_aws_tf_cicd : {
-      name = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
+      name       = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
+      git_source = "module_aws_tf_cicd"
 
       tags = {
         "Description"         = "Pipeline that validates functionality and security of the module-aws-tf-cicd Terraform Module.",
@@ -151,8 +153,8 @@ module "module-aws-tf-cicd" {
               provider = "S3"
               version  = "1"
               configuration = {
-                S3Bucket    = module.module-aws-tf-cicd.git_remote_s3_bucket_names["module_aws_tf_cicd"]
-                S3ObjectKey = "s3-repo/refs/heads/main/repo.zip"
+                S3Bucket             = module.module-aws-tf-cicd.git_remote_s3_bucket_names["module_aws_tf_cicd"]
+                S3ObjectKey          = "s3-repo/refs/heads/main/repo.zip"
                 PollForSourceChanges = false
               }
               input_artifacts = []
@@ -218,7 +220,8 @@ module "module-aws-tf-cicd" {
     # Terraform Deployment Pipeline for 'example-production workload'
     tf_deployment_example_production_workload : {
 
-      name = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
+      name       = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
+      git_source = "example_production_workload"
 
       tags = {
         "Description"         = "Pipeline that validates functionality/security and deploys the Example Production Workload.",
@@ -241,8 +244,8 @@ module "module-aws-tf-cicd" {
               provider = "S3"
               version  = "1"
               configuration = {
-                S3Bucket    = module.module-aws-tf-cicd.git_remote_s3_bucket_names["example_production_workload"]
-                S3ObjectKey = "s3-repo/refs/heads/main/repo.zip"
+                S3Bucket             = module.module-aws-tf-cicd.git_remote_s3_bucket_names["example_production_workload"]
+                S3ObjectKey          = "s3-repo/refs/heads/main/repo.zip"
                 PollForSourceChanges = false
               }
               input_artifacts = []
@@ -315,12 +318,15 @@ module "module-aws-tf-cicd" {
                 CustomData      = "Please approve this deployment."
                 NotificationArn = aws_sns_topic.manual_approval_sns_topic.arn
               }
+
               input_artifacts  = []
               output_artifacts = []
+
               run_order = 4
             },
           ]
         },
+
 
         # Apply Terraform
         {
@@ -338,10 +344,10 @@ module "module-aws-tf-cicd" {
               }
               # Use the 'source_output_artifacts' contents from the Artifacts S3 Bucket
               input_artifacts = ["source_output_artifacts"]
-              # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
+              # Store the output of this stage as 'build_tf_test_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_apply_output_artifacts"]
 
-              run_order = 5
+              run_order = 4
             },
           ]
         },
@@ -354,4 +360,3 @@ module "module-aws-tf-cicd" {
   # Ensure we've pushed the docker images before we configure the CodeBuild Projects
   depends_on = [null_resource.docker_push]
 }
-

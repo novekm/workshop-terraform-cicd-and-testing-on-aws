@@ -1,4 +1,5 @@
 # Instructions: Create resources for IAM
+
 resource "random_string" "random_string" {
   length  = 4
   special = false
@@ -43,7 +44,21 @@ data "aws_iam_policy_document" "codepipeline_trust_relationship" {
 
 # - Policies -
 # S3 Event Notifications - Invoke CodePipeline
-data "aws_iam_policy_document" "s3_trigger_codepipeline_policy" {
+# EventBridge - Forward events policy
+data "aws_iam_policy_document" "eventbridge_forward_events_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "events:PutEvents",
+    ]
+    resources = [
+      aws_cloudwatch_event_bus.tf_workshop_event_bus.arn
+    ]
+  }
+}
+
+# EventBridge - Trigger CodePipeline policy
+data "aws_iam_policy_document" "eventbridge_trigger_codepipeline_policy" {
   statement {
     effect = "Allow"
     actions = [
@@ -58,15 +73,28 @@ data "aws_iam_policy_document" "s3_trigger_codepipeline_policy" {
   #checkov:skip=CKV_AWS_356: "Ensure no IAM policies documents allow "*" as a statement's resource for restrictable actions""
   #checkov:skip=CKV_AWS_111: "Ensure IAM policies does not allow write access without constraints"
 }
-resource "aws_iam_policy" "s3_trigger_codepipeline_policy" {
-  name        = "${var.project_prefix}-s3-trigger-codepipeline-${random_string.random_string.result}"
-  description = "Policy that allows S3 event notifications to trigger CodePipeline executions."
-  policy      = data.aws_iam_policy_document.s3_trigger_codepipeline_policy.json
+resource "aws_iam_policy" "eventbridge_forward_events_policy" {
+  name        = "${var.project_prefix}-eventbridge-forward-events-${random_string.random_string.result}"
+  description = "Policy that allows EventBridge to forward events from default to custom event bus."
+  policy      = data.aws_iam_policy_document.eventbridge_forward_events_policy.json
 
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_prefix}-s3-trigger-codepipeline"
+      Name = "${var.project_prefix}-eventbridge-forward-events"
+    },
+  )
+}
+
+resource "aws_iam_policy" "eventbridge_trigger_codepipeline_policy" {
+  name        = "${var.project_prefix}-eventbridge-trigger-codepipeline-${random_string.random_string.result}"
+  description = "Policy that allows EventBridge to trigger CodePipeline executions."
+  policy      = data.aws_iam_policy_document.eventbridge_trigger_codepipeline_policy.json
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_prefix}-eventbridge-trigger-codepipeline"
     },
   )
 }
@@ -124,21 +152,38 @@ resource "aws_iam_policy" "codepipeline_policy" {
 
 
 # - IAM Roles -
-# S3 Event Notifications to trigger CodePipeline
-resource "aws_iam_role" "s3_trigger_codepipeline" {
-  name                  = "${var.project_prefix}-s3-trigger-codepipeline-${random_string.random_string.result}"
+# EventBridge - Forward events from default to custom event bus
+resource "aws_iam_role" "eventbridge_forward_events" {
+  name                  = "${var.project_prefix}-eventbridge-forward-events-${random_string.random_string.result}"
   assume_role_policy    = data.aws_iam_policy_document.eventbridge_trust_relationship.json
   force_detach_policies = var.enable_force_detach_policies
   tags = merge(
     var.tags,
     {
-      Name = "${var.project_prefix}-s3-trigger-codepipeline"
+      Name = "${var.project_prefix}-eventbridge-forward-events"
     },
   )
 }
-resource "aws_iam_role_policy_attachment" "s3_trigger_codepipeline" {
-  role       = aws_iam_role.s3_trigger_codepipeline.name
-  policy_arn = aws_iam_policy.s3_trigger_codepipeline_policy.arn
+resource "aws_iam_role_policy_attachment" "eventbridge_forward_events" {
+  role       = aws_iam_role.eventbridge_forward_events.name
+  policy_arn = aws_iam_policy.eventbridge_forward_events_policy.arn
+}
+
+# EventBridge - Trigger CodePipeline from custom event bus
+resource "aws_iam_role" "eventbridge_trigger_codepipeline" {
+  name                  = "${var.project_prefix}-eventbridge-trigger-codepipeline-${random_string.random_string.result}"
+  assume_role_policy    = data.aws_iam_policy_document.eventbridge_trust_relationship.json
+  force_detach_policies = var.enable_force_detach_policies
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_prefix}-eventbridge-trigger-codepipeline"
+    },
+  )
+}
+resource "aws_iam_role_policy_attachment" "eventbridge_trigger_codepipeline" {
+  role       = aws_iam_role.eventbridge_trigger_codepipeline.name
+  policy_arn = aws_iam_policy.eventbridge_trigger_codepipeline_policy.arn
 }
 
 
