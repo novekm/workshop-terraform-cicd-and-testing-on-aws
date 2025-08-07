@@ -1,4 +1,5 @@
 # Instructions: Create resources for S3
+
 resource "random_string" "codepipeline_artifacts_s3_buckets" {
   for_each = var.codepipeline_pipelines == null ? {} : var.codepipeline_pipelines
   length   = 4

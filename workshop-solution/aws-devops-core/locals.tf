@@ -1,10 +1,11 @@
 # Instructions: Place your locals below
+
 locals {
-  # -- CodeCommit --
-  # CodeCommit Repository Names
-  module_aws_tf_cicd_repository_name          = "module-aws-tf-cicd"
-  aws_devops_core_repository_name             = "aws-devops-core"
-  example_production_workload_repository_name = "example-prod-workload"
+  # -- Git Remote S3 --
+  # S3 Bucket Names for git-remote-s3
+  module_aws_tf_cicd_bucket_name          = "module-aws-tf-cicd"
+  aws_devops_core_bucket_name             = "aws-devops-core"
+  example_production_workload_bucket_name = "example-prod-workload"
 
 
   # -- CodeBuild --

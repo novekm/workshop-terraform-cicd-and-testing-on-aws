@@ -1,4 +1,4 @@
-# HINT: Make sure to run `terraform init` in this directory before running `terraform test`. Also, ensure you use constant values (e.g. string, number, bool, etc.) within your tests where at all possible or you may encounter errors.
+# Instructions: Create basic tests
 
 # Configure the AWS Provider
 provider "aws" {
@@ -7,6 +7,18 @@ provider "aws" {
 
 # Global Testing Variables - Define variables to be used in all tests here. You can overwrite these varibles by definig an additional variables block within the 'run' block for your tests
 variables {
+  # - Test Git Remote S3 Buckets -
+  git_remote_s3_buckets = {
+    # Test Module 1
+    test_module_1 : {
+      bucket_name = "test-module-1"
+      description = "Test Module 1."
+      versioning  = true
+      tags = {
+        "ContentType" = "Test Module",
+      }
+    },
+  }
 
   # - Test CodeBuild Projects -
   codebuild_projects = {
@@ -53,7 +65,8 @@ variables {
     #  Module Validation Pipelines
     # Terraform Module Validation Pipeline for 'test-module-1' Terraform Module
     tf_module_validation_test_module_1 : {
-      name = "tf-module-validation-test-module-1"
+      name = "tf-test-1"
+      git_source = "test_module_1"
       tags = {
         "Description" = "Test Module 1.",
       }
@@ -151,6 +164,19 @@ run "input_validation" {
     # Intentional project_prefix that is longer than max of 40 characters (overwrite of above global variable)
     project_prefix = "this_is_a_project_prefix_and_it_is_over_40_characters_and_will_cause_a_failure"
 
+    # Git Remote S3 Buckets - Intentional bucket name that is longer than max of 63 characters
+    git_remote_s3_buckets = {
+      # Test Module 1
+      test_module_1 : {
+        bucket_name = "valid-bucket-name"
+        description = "Test Module 1."
+        versioning  = true
+        tags = {
+          "ContentType" = "Test Module",
+        },
+      },
+    }
+
     # CodeBuild - Intentional project name that is longer than max of 40 characters
     codebuild_projects = {
       # Test Module 1
@@ -179,6 +205,7 @@ run "input_validation" {
       # Terraform Module Validation Pipeline for 'test-module-1' Terraform Module
       tf_module_validation_test_module_1 : {
         name = "this_is_a_pipeline_name_and_it_is_longer_than_40_characters_and_will_fail"
+        git_source = "nonexistent_bucket"
         tags = {
           "Description" = "Test Module 1.",
 
@@ -284,6 +311,11 @@ run "e2e_test" {
   # Using global variables defined above since additional variables block is not defined here
 
   # Assertions
+  # Git Remote S3 Buckets - Ensure buckets have correct names after creation
+  assert {
+    condition     = startswith(aws_s3_bucket.git_remote_s3_buckets["test_module_1"].id, "test-module-1")
+    error_message = "The Git Remote S3 Bucket name (${aws_s3_bucket.git_remote_s3_buckets["test_module_1"].id}) did not start with the expected value (test-module-1)."
+  }
 
   # CodeBuild - Ensure projects have correct names after creation
   assert {
@@ -293,8 +325,8 @@ run "e2e_test" {
 
   # CodePipeline - Ensure pipelines have correct names after creation
   assert {
-    condition     = aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name == "tf-module-validation-test-module-1"
-    error_message = "The CodePipeline pipeline name (${aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name}) didn't match the expected value (tf-module-validation-test-module-1)."
+    condition     = aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name == "tf-test-1"
+    error_message = "The CodePipeline pipeline name (${aws_codepipeline.codepipeline["tf_module_validation_test_module_1"].name}) didn't match the expected value (tf-test-1)."
   }
 
   # S3 Remote State - Ensure S3 Remote State buckets have correct names after creation

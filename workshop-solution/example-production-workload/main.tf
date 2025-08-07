@@ -1,4 +1,5 @@
-#  Create Example Production Resources below
+#  Instructions: Create Example Production Resources below
+
 # - Trust Relationships -
 data "aws_iam_policy_document" "ec2_trust_relationship" {
   statement {

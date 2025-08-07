@@ -1,4 +1,5 @@
 # Instructions: Place your core Terraform Module configuration below
+
 resource "aws_sns_topic" "manual_approval_sns_topic" {
   name = "manual-approval-sns-topic"
 }
@@ -6,7 +7,7 @@ resource "aws_sns_topic" "manual_approval_sns_topic" {
 resource "aws_sns_topic_subscription" "manual_approval_sns_subscription" {
   topic_arn = aws_sns_topic.manual_approval_sns_topic.arn
   protocol  = "email"
-  endpoint  = "novekm@amazon.com" # Replace with your email address
+  endpoint  = "your@email.com" # Replace with your email address
 }
 
 module "module-aws-tf-cicd" {
@@ -23,52 +24,49 @@ module "module-aws-tf-cicd" {
     },
   }
 
-  # - Create CodeCommit Repos -
-  codecommit_repos = {
+  # - Create Git Remote S3 Buckets -
+  git_remote_s3_buckets = {
     # Custom Terraform Module Repo
-    module_aws_tf_cicd : {
-
-      repository_name = local.module_aws_tf_cicd_repository_name
-      description     = "The repo containing the configuration for the 'module-aws-tf-cicd' Terraform Module."
-      default_branch  = "main"
+    module_aws_tf_cicd = {
+      bucket_name = local.module_aws_tf_cicd_bucket_name
+      description = "S3 bucket for git-remote-s3 containing the module-aws-tf-cicd Terraform Module."
+      versioning  = true
       tags = {
-        "ContentType"         = "Terraform Module",
-        "PrimaryOwner"        = "Kevon Mayers",
-        "PrimaryOwnerTitle"   = "Solutions Architect",
-        "SecondaryOwner"      = "Naruto Uzumaki",
-        "SecondaryOwnerTitle" = "Hokage",
+        "ContentType"         = "Terraform Module"
+        "PrimaryOwner"        = "Kevon Mayers"
+        "PrimaryOwnerTitle"   = "Solutions Architect"
+        "SecondaryOwner"      = "Naruto Uzumaki"
+        "SecondaryOwnerTitle" = "Hokage"
       }
     },
 
     # DevOps Core Infrastructure Repo
-    aws_devops_core : {
-
-      repository_name = local.aws_devops_core_repository_name
-      description     = "The repo containing the configuration for the core DevOps infrastructure."
-      default_branch  = "main"
+    aws_devops_core = {
+      bucket_name = local.aws_devops_core_bucket_name
+      description = "S3 bucket for git-remote-s3 containing the core DevOps infrastructure."
+      versioning  = true
       tags = {
-        "ContentType"         = "AWS Infrastructure",
-        "Scope"               = "DevOps Services",
-        "PrimaryOwner"        = "Kevon Mayers",
-        "PrimaryOwnerTitle"   = "Solutions Architect",
-        "SecondaryOwner"      = "Naruto Uzumaki",
-        "SecondaryOwnerTitle" = "Hokage",
+        "ContentType"         = "AWS Infrastructure"
+        "Scope"               = "DevOps Services"
+        "PrimaryOwner"        = "Kevon Mayers"
+        "PrimaryOwnerTitle"   = "Solutions Architect"
+        "SecondaryOwner"      = "Naruto Uzumaki"
+        "SecondaryOwnerTitle" = "Hokage"
       }
     },
 
     # Example Production Workload Repo
-    example_production_workload : {
-
-      repository_name = local.example_production_workload_repository_name
-      description     = "The repo containing the configuration for the core example production workload."
-      default_branch  = "main"
+    example_production_workload = {
+      bucket_name = local.example_production_workload_bucket_name
+      description = "S3 bucket for git-remote-s3 containing the example production workload."
+      versioning  = true
       tags = {
-        "ContentType"         = "AWS Infrastructure",
-        "Scope"               = "Example Production Environment",
-        "PrimaryOwner"        = "Kevon Mayers",
-        "PrimaryOwnerTitle"   = "Solutions Architect",
-        "SecondaryOwner"      = "Naruto Uzumaki",
-        "SecondaryOwnerTitle" = "Hokage",
+        "ContentType"         = "AWS Infrastructure"
+        "Scope"               = "Example Production Environment"
+        "PrimaryOwner"        = "Kevon Mayers"
+        "PrimaryOwnerTitle"   = "Solutions Architect"
+        "SecondaryOwner"      = "Naruto Uzumaki"
+        "SecondaryOwnerTitle" = "Hokage"
       }
     },
   }
@@ -130,8 +128,9 @@ module "module-aws-tf-cicd" {
   codepipeline_pipelines = {
 
     # Terraform Module Validation Pipeline for 'module-aws-tf-cicd' Terraform Module
-    module_aws_tf_cicd : {
-      name = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
+    tf_module_validation_module_aws_tf_cicd : {
+      name       = local.tf_module_validation_module_aws_tf_cicd_codepipeline_pipeline_name
+      git_source = "module_aws_tf_cicd"
 
       tags = {
         "Description"         = "Pipeline that validates functionality and security of the module-aws-tf-cicd Terraform Module.",
@@ -143,19 +142,19 @@ module "module-aws-tf-cicd" {
       }
 
       stages = [
-        # Clone from CodeCommit, store contents in  artifacts S3 Bucket
+        # Pull from S3 git remote, store contents in artifacts S3 Bucket
         {
           name = "Source"
           action = [
             {
-              name     = "PullFromCodeCommit"
+              name     = "PullFromS3"
               category = "Source"
               owner    = "AWS"
-              provider = "CodeCommit"
+              provider = "S3"
               version  = "1"
               configuration = {
-                BranchName           = "main"
-                RepositoryName       = local.module_aws_tf_cicd_repository_name
+                S3Bucket             = module.module-aws-tf-cicd.git_remote_s3_bucket_names["module_aws_tf_cicd"]
+                S3ObjectKey          = "s3-repo/refs/heads/main/repo.zip"
                 PollForSourceChanges = false
               }
               input_artifacts = []
@@ -219,9 +218,11 @@ module "module-aws-tf-cicd" {
 
 
     # Terraform Deployment Pipeline for 'example-production workload'
-    example_production_workload : {
+    tf_deployment_example_production_workload : {
 
-      name = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
+      name       = local.tf_deployment_example_production_workload_codepipeline_pipeline_name
+      git_source = "example_production_workload"
+
       tags = {
         "Description"         = "Pipeline that validates functionality/security and deploys the Example Production Workload.",
         "Usage"               = "Example Production Workload",
@@ -232,19 +233,19 @@ module "module-aws-tf-cicd" {
       }
 
       stages = [
-        # Clone from CodeCommit, store contents in  artifacts S3 Bucket
+        # Pull from S3 git remote, store contents in artifacts S3 Bucket
         {
           name = "Source"
           action = [
             {
-              name     = "PullFromCodeCommit"
+              name     = "PullFromS3"
               category = "Source"
               owner    = "AWS"
-              provider = "CodeCommit"
+              provider = "S3"
               version  = "1"
               configuration = {
-                BranchName           = "main"
-                RepositoryName       = local.example_production_workload_repository_name
+                S3Bucket             = module.module-aws-tf-cicd.git_remote_s3_bucket_names["example_production_workload"]
+                S3ObjectKey          = "s3-repo/refs/heads/main/repo.zip"
                 PollForSourceChanges = false
               }
               input_artifacts = []
@@ -343,10 +344,10 @@ module "module-aws-tf-cicd" {
               }
               # Use the 'source_output_artifacts' contents from the Artifacts S3 Bucket
               input_artifacts = ["source_output_artifacts"]
-              # Store the output of this stage as 'build_checkov_output_artifacts' in the connected Artifacts S3 Bucket
+              # Store the output of this stage as 'build_tf_test_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_apply_output_artifacts"]
 
-              run_order = 5
+              run_order = 4
             },
           ]
         },
@@ -359,4 +360,3 @@ module "module-aws-tf-cicd" {
   # Ensure we've pushed the docker images before we configure the CodeBuild Projects
   depends_on = [null_resource.docker_push]
 }
-
