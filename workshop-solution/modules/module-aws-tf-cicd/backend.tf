@@ -1,4 +1,5 @@
 # Instructions: Dynamically create resources for S3 Remote Backend (Amazon S3 and DynamoDB)
+
 resource "random_string" "tf_remote_state_s3_buckets" {
   for_each = var.tf_remote_state_resource_configs == null ? {} : var.tf_remote_state_resource_configs
   length   = 4
@@ -17,7 +18,6 @@ resource "aws_s3_bucket" "tf_remote_state_s3_buckets" {
   #checkov:skip=CKV_AWS_144: "Ensure that S3 bucket has cross-region replication enabled"
   #checkov:skip=CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
   #checkov:skip=CKV_AWS_145: "Ensure that S3 buckets are encrypted with KMS by default"
-  #
 }
 
 resource "aws_s3_bucket_versioning" "tf_remote_state_s3_buckets" {

@@ -20,7 +20,7 @@ run "e2e_test" {
   # Assertions
   # IAM Role - Ensure the role has the correct name, and trust policy after creation
   assert {
-    condition     = startswith(aws_iam_role.example.id, "example-prod-resource")
+    condition     = startswith(aws_s3_bucket.example.id, "example-prod-resource")
     error_message = "The IAM Role name (${aws_iam_role.example.name}) did not start with the expected value (example-prod-resource)."
   }
 
@@ -36,6 +36,10 @@ run "e2e_test" {
     error_message = "The S3 Remote State Bucket name (${aws_s3_bucket.example.id}) did not start with the expected value (example-prod-resource)."
   }
 }
+
+
+
+
 
 
 

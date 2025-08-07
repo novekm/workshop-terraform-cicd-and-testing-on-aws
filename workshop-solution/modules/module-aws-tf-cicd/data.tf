@@ -1,4 +1,5 @@
 # Instructions: Create Data Source to fetch current AWS Region
+
 # Current AWS region
 data "aws_region" "current" {}
 
