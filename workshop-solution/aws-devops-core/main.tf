@@ -347,7 +347,7 @@ module "module-aws-tf-cicd" {
               # Store the output of this stage as 'build_tf_test_output_artifacts' in the connected Artifacts S3 Bucket
               output_artifacts = ["build_tf_apply_output_artifacts"]
 
-              run_order = 4
+              run_order = 5
             },
           ]
         },

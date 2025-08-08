@@ -1,4 +1,4 @@
-# Instructions: Dynamically create AWS CodeCommit Repos
+# Instructions: Dynamically create git repositories with git-remote-s3
 
 resource "random_string" "git_remote_s3_buckets" {
   for_each = var.git_remote_s3_buckets == null ? {} : var.git_remote_s3_buckets
