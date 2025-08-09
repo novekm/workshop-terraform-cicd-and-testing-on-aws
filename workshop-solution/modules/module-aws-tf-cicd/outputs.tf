@@ -6,12 +6,6 @@ output "tf_state_s3_buckets_names" {
   })
 }
 
-output "tf_state_ddb_table_names" {
-  value = tomap({
-    for k, table in aws_dynamodb_table.tf_remote_state_lock_tables : k => table.id
-  })
-}
-
 output "git_remote_s3_bucket_names" {
   description = "Names of S3 buckets created for git-remote-s3"
   value = tomap({
