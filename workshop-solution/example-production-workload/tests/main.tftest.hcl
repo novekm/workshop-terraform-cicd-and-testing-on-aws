@@ -8,7 +8,7 @@ provider "aws" {
 }
 
 # - End-to-end Tests -
-run "e2e_test" {
+run "integration_test" {
   command = apply
 
   # Using global variables defined above since additional variables block is not defined here

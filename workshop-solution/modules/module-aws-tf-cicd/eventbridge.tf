@@ -31,6 +31,9 @@ resource "aws_cloudwatch_event_rule" "default_event_bus_to_tf_workshop_event_bus
       bucket = {
         name = [aws_s3_bucket.git_remote_s3_buckets[each.value.git_source].id]
       }
+      object = {
+        key = [{ suffix = { equals-ignore-case = ".zip" }}]
+      }
     }
   })
 
@@ -65,6 +68,9 @@ resource "aws_cloudwatch_event_rule" "invoke_codepipeline" {
     detail = {
       bucket = {
         name = [aws_s3_bucket.git_remote_s3_buckets[each.value.git_source].id]
+      }
+      object = {
+        key = [{ suffix = { equals-ignore-case = ".zip" }}]
       }
     }
   })
