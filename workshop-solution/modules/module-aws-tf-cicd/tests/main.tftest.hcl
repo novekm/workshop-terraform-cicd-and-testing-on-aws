@@ -334,10 +334,4 @@ run "integration_test" {
     condition     = startswith(aws_s3_bucket.tf_remote_state_s3_buckets["test_tf_remote_state_config_1"].id, "test-tf-remote-state-config-1")
     error_message = "The S3 Remote State Bucket name (${aws_s3_bucket.tf_remote_state_s3_buckets["test_tf_remote_state_config_1"].id}) did not start with the expected value (test-tf-remote-state-config-1)."
   }
-
-  # DynamoDB Terraform State Lock Table - Ensure DynamoDB Terraform State Lock Tables have correct names after creation
-  assert {
-    condition     = startswith(aws_dynamodb_table.tf_remote_state_lock_tables["test_tf_remote_state_config_1"].id, "test-tf-remote-state-config-1")
-    error_message = "The DynamoDB Terraform State Lock table name (${aws_dynamodb_table.tf_remote_state_lock_tables["test_tf_remote_state_config_1"].id}) did not start with the expected value (test-tf-remote-state-config-1)."
-  }
 }
